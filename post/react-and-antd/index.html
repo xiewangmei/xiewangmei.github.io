@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>React &amp; Antd | Blog-wmxie</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://xiewangmei.github.io/favicon.ico?v=1601358577684">
+<link rel="stylesheet" href="https://xiewangmei.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="
+
+可以通过React.createContext中的Provider实现夸层级传递属性，避免繁琐的一层层传递
+const { Provider } = React.createContext();
+{......}
+
+
+
+tab点击想要触..." />
+    <meta name="keywords" content="React" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://xiewangmei.github.io">
+        <img src="https://xiewangmei.github.io/images/avatar.png?v=1601358577684" class="site-logo">
+        <h1 class="site-title">Blog-wmxie</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="https://xiewangmei.github.io/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      念念不忘，必有回响~
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://xiewangmei.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">React &amp; Antd</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <ol>
+<li>
+<p>可以通过React.createContext中的Provider实现夸层级传递属性，避免繁琐的一层层传递</p>
+<pre><code class="language-react">const { Provider } = React.createContext();
+{......}
+</code></pre>
+</li>
+<li>
+<p>tab点击想要触发重新渲染，可以设置state里的数据发生变化，但是该state必须要使用，才会触发，不然就不会触发，可以将原本的对象返回一个新对象，比如</p>
+<pre><code class="language-javascript">record={…record}
+component: props =&gt; {
+ return &lt;filterRoute.component {...props} /&gt;;
+}
+</code></pre>
+</li>
+<li>
+<p>一行一个标签对应多个输入组件，这个需求很常见但在官方例子没看到合适的，因为官方建议：</p>
+<blockquote>
+<p>注意：一个 Form.Item 建议只放一个被 getFieldDecorator 装饰过的 child，当有多个被装饰过的 child 时，help required validateStatus 无法自动生成。</p>
+</blockquote>
+<p>所以可以通过在FormItem组件中再包一层FormItem，通过flex布局调整其布局，,这样校验的位置也是正确的，校验提示也能自动生成。</p>
+<pre><code class="language-react">&lt;FormItem {...formItemLayout} label=&quot;IP地址段&quot;&gt;
+     &lt;div style={{ display: &quot;flex&quot; }}&gt;
+     	&lt;FormItem&gt;
+        {getFieldDecorator(&quot;start&quot;, {
+            rules: [{ required: true, message: &quot;该项为必填项&quot; }]
+         })(
+             &lt;Input style={{ width: 220 }}placeholder=&quot;请输入起始IP&quot;/&gt;
+         )}
+         &lt;/FormItem&gt;
+		&lt;div className={styles[&quot;ip-range-div&quot;]}&gt;-&lt;/div&gt;
+		&lt;FormItem&gt;
+    	{getFieldDecorator(&quot;end&quot;, {
+           	rules: [{ required: true, message: &quot;该项为必填项&quot; }]
+   		 })(
+        &lt;Input style={{ width: 220 }} placeholder=&quot;请输入结束IP&quot;/&gt;
+        )}
+        &lt;/FormItem&gt;
+	&lt;/div&gt;
+&lt;/FormItem&gt;
+</code></pre>
+</li>
+<li>
+<p>想要一个组件不被重新渲染，那么该组件的props都必须被校验为未修改才不会执行重渲染，函数执行返回的是一个新对象，比如说Drawer</p>
+<pre><code class="language-React"> &lt;RegionManagerDrawer
+     handleSubmitResult={this.handleSubmitResult}
+     onClose={this.closeDrawer}
+     // onClose={()=&gt;this.closeDrawer()}这种写法会触发重新渲染
+     mode={mode}
+     record={record}
+     handleEdit={this.handleEdit}
+ /&gt;
+</code></pre>
+<p>但是有一个问题：Modal 只要将destoryOnClose设置为true即可</p>
+</li>
+<li>
+<p>antd的table控制是否展开，expandedRowKeys数组存放对应展开行的数据key，控制是否单独单元格放置展开图标<code>expandIconAsCell = {false}</code>，number设置展开图标所在的单元格索引，取一个不存在的索引可达到去掉预设图标的效果<code>expandIconColumnIndex = {-1}</code></p>
+</li>
+<li>
+<p>table固定列的宽度，超出部分用<code>…</code>代替（针对普通table和antd）</p>
+<ul>
+<li>
+<p>让溢出内容变成…，需要如下样式</p>
+<pre><code class="language-css">overflow: hidden; //超出部分隐藏
+text-overflow:ellipsis; //显示省略符来代表被修剪的文本
+white-space: nowrap; //强制不换行
+</code></pre>
+<p>table的宽度我们并不能控制，内容会自动撑大表格列表宽度，需要给<code>table</code>加上一个样式：</p>
+<pre><code class="language-css">table-layout:fixed;
+</code></pre>
+</li>
+</ul>
+</li>
+<li>
+<p>经过 <code>getFieldDecorator</code> 包装的控件，表单控件会自动添加 <code>value</code>，switch这种实际值不是value什么的，在form表单中可能设置不上值，需要通过<code>valuePropName</code>指定子节点的值的属性，如 Switch 的是 'checked'</p>
+</li>
+<li>
+<p>在form中如果已经设置了initialValue:value，避免在componentDidMount（useEffect）等生命周期函数中使用this.props.form.setFieldsValue，否则会产生<code>Warning: You cannot set a form field before rendering a field associated with the value</code>，单一使用即可</p>
+</li>
+<li>
+<p>form item的validator中必须要返回callback().，否则<code>validateFields（validateFieldsAndScroll ）</code>方法不生效</p>
+<pre><code class="language-react">handleConfirmPassword = (rule, value, callback) =&gt; {
+        const { getFieldValue } = this.props.form
+        if (value &amp;&amp; value !== getFieldValue('newPassword')) {
+            callback('两次输入不一致！')
+        }
+
+        // Note: 必须总是返回一个 callback，否则 validateFieldsAndScroll 无法响应
+        callback()
+ }
+</code></pre>
+</li>
+<li>
+<p>setState支持回调，可以在render之前进行dom focus系列的操作，hooks中的setXXX不支持回调，转变为在useEffect中进行操作，同时监听XXXstate，即可实现同样的效果</p>
+</li>
+<li>
+<p>通过setFieldsValue的属性设置值时，该元素必须是紧接着FormItem的，不然没法设置成功，不能嵌套div之类的其他元素</p>
+</li>
+<li>
+<p>create-react-app 报错 babel插件与实际安装的present-env版本不一致，是因为代理的问题，尝试去掉<code>用户\wmxie</code>下面的<code>.npmrc</code>文件，再重新执行，若不报错，则是代理的问题，尝试替换代理或不使用代理</p>
+</li>
+<li>
+<p>Icon可以设置rotate来控制图标旋转的角度   <code>transform: rotate(45deg);</code></p>
+</li>
+<li>
+<p>JavaScript之forEach循环遍历方法用于调用数组的每个元素，并将元素传递给回调数组，<code>forEach</code>是Array下的一个方法。</p>
+<blockquote>
+<p>注意：无法使用break等语句跳出遍历，直到所有元素都传递给调用的函数，但是可以抛出异常，提前终止循环。类似的还有map</p>
+</blockquote>
+</li>
+<li>
+<p>react-redux升级之后基本都变成了function组件，比如connect由class组件变成了function组件，需要传递ref</p>
+<pre><code class="language-javascript">1. 组件是class，使用connect进行包裹
+	connect(mapStateToProps,mapDispatchToProps,null,{forwardRef:true})
+2. 组件是function，未使用connect
+	 (1).使用forwardRef包裹组件
+3. 组件是function，同时使用connect进行包裹
+	 (1).使用forwardRef包裹function组件，同时connect中需要按照情况1的写法写
+     (2).使用forwardRef包裹组件，使用useSelector，useDispatch，不使用connect
+</code></pre>
+</li>
+<li>
+<p>antd的FormItem在创建的时候会给组件传递ref，所以就会有15中的问题存在，需按照15中的方法执行</p>
+</li>
+<li>
+<p>ref={ref} 这种形式 括号里的ref是React.createRef出来的 最终会被放到ref.current里</p>
+<p>ref={function} 这种形式 不需要React.createRef</p>
+</li>
+</ol>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://xiewangmei.github.io/tag/0z8xeoWao/" class="tag">
+                    React
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://xiewangmei.github.io/post/react-native/">
+                  <h3 class="post-title">
+                    React Native
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>
