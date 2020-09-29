@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>React小知识 | Blog-wmxie</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://xiewangmei.github.io/favicon.ico?v=1601358967927">
+<link rel="stylesheet" href="https://xiewangmei.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="React的程序流程
+
+
+在React中无论发生何种事件，引发的都是React组件的重新渲染，至于如何只修改必要的DOM部分，则完全交给React去操作，开发者并不需要关心。
+
+Virtual DOM
+
+
+既然DOM树是对HTML的抽象，那..." />
+    <meta name="keywords" content="React" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://xiewangmei.github.io">
+        <img src="https://xiewangmei.github.io/images/avatar.png?v=1601358967927" class="site-logo">
+        <h1 class="site-title">Blog-wmxie</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="https://xiewangmei.github.io/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      念念不忘，必有回响~
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://xiewangmei.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">React小知识</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h3 id="react的程序流程">React的程序流程</h3>
+<figure data-type="image" tabindex="1"><img src="https://xiewangmei.github.io/post-images/1601358552129.png" alt="React程序流程" loading="lazy"></figure>
+<ul>
+<li>在React中无论发生何种事件，引发的都是React组件的重新渲染，至于如何只修改必要的DOM部分，则完全交给React去操作，开发者并不需要关心。</li>
+</ul>
+<h3 id="virtual-dom">Virtual DOM</h3>
+<ul>
+<li>
+<p>既然DOM树是对HTML的抽象，那<code>Virtual DOM</code>就是对DOM的抽象。<code>Virtual DOM</code>不会触及浏览器的部分，只是存在于JavaScript空间的树形结构，每次自上而下渲染React组件时，会对比这一次产生的<code>Virtual DOM</code>和上一次渲染的<code>Virtual DOM</code>，对比就会发现差别，然后修改真正的DOM树时就只要触及差别中的部分就行了。</p>
+<ul>
+<li>
+<p>以ClickCouter为例，一开始点击计数为0，用户点击按钮让点击计数变成1，这次重新渲染，React通过<code>Virtual DOM</code>的对比发现其实只是id为clickCount的span元素中内容从0变成了1而已：</p>
+<pre><code class="language-javascript">&lt;span id=&quot;clickCount&quot;&gt;{this.state.count}&lt;/span&gt;
+</code></pre>
+<p>React发现这次渲染要做的事情只是更换这个span元素的内容而已，其他DOM元素都不需要触及，于是执行类似下面的语句就可以完成任务了：</p>
+<pre><code class="language-javascript">document.getElementById(&quot;clickCount&quot;).innerHTML = &quot;1&quot;;
+</code></pre>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="prop和state的对比">prop和state的对比</h3>
+<ul>
+<li><code>prop</code>用于定义外部接口，<code>state</code>用于记录内部状态</li>
+<li><code>prop</code>的赋值在外部世界使用组件时，<code>state</code>的赋值在组件内部</li>
+<li>组件不应该改变<code>prop</code>的值，而<code>state</code>存在的目的就是让组件来改变的</li>
+</ul>
+<h3 id="refrefs">ref&amp;refs</h3>
+<ul>
+<li>
+<p><code>React</code>支持一种非常特殊的属性<font color='red'><code>ref</code></font>，可以用来绑定到render()输出的任何组件上</p>
+<ul>
+<li><code>ref</code>：绑定属性</li>
+<li><code>refs</code>：调用的时候使用</li>
+</ul>
+</li>
+<li>
+<p>通过<code>refs</code>访问父组件方法</p>
+<pre><code class="language-jsx">this.refs.subcomponents.subHandleClick();
+</code></pre>
+</li>
+<li>
+<p>为了获取真实DOM节点，html元素必须有一个<code>ref属性</code>，然后**<code>this.refs.[refName]</code>**就会返回这个真实的DOM节点。</p>
+<blockquote>
+<p><strong>注意</strong>：由于**this.refs.[refName]**属性获取的是真实DOM，所以必须等到虚拟DOM插入文档后，才能使用这个属性，否则获取不到。</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="组件生命周期">组件生命周期</h3>
+<ul>
+<li>
+<p><strong><code>constructor</code></strong>：构造函数是初始化状态的合适位置。若不初始化状态且不绑定方法，那就不需要为React组件定义一个构造函数。</p>
+</li>
+<li>
+<p><strong><code>render</code></strong>：该方法是必须的，当被调用时，其应该检查<code>this.props</code>和<code>this.state</code>，并返回以下类型中的一个：</p>
+<ul>
+<li>
+<p><strong>React元素</strong>：通常由JSX创建，该元素可能是一个原生DOM组件的表示，如<code>&lt;div/&gt;</code>，或者是一个自定义的合成组件。</p>
+</li>
+<li>
+<p><strong>字符串或数字</strong>：这些将被渲染为DOM中的Text Node</p>
+</li>
+<li>
+<p><strong><a href="https://segmentfault.com/a/1190000012325351">Portals</a></strong>：由<strong>ReactDOM.createPortal</strong>创建，可以将React子节点的DOM结构，渲染到React父节点之外的DOM中， portal 也一直存在于React 树上，无论它位于 DOM 树中的什么位置。</p>
+<pre><code class="language-react">ReactDOM.createPortal(child, container)
+</code></pre>
+</li>
+<li>
+<p><strong>null</strong>：什么都不渲染</p>
+</li>
+<li>
+<p><strong>布尔值</strong>：什么都不渲染，（通常存在于<code>return test &amp;&amp; &lt;child /&gt;</code>写法，其中<code>test</code>是布尔值。</p>
+<p>当返回<code>null</code>或<code>false</code>时，<code>ReactDOM.findDOMNode(this)</code>将返回<code>null</code>）</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong><code>componentWillMount</code></strong>：紧贴着自己组件的<code>render</code>函数之前被调用</p>
+</li>
+<li>
+<p><strong><code>componentDidMount</code></strong>：不是紧跟着<code>render</code>之后调用，当所有的组件都调用完了，所有组件的<code>componentDidMount</code>才会一起被调用。初始化使得DOM节点应该进行到这里。若你需要从远端加载数据，这是一个<strong>适合实现网络请求的地方</strong>。在该方法里设置状态将<strong>会触发重渲</strong>。</p>
+<blockquote>
+<p>原因：<code>render</code>函数本身并不往DOM树上渲染或者装载内容，它只是返回一个<font color='blue'><code>JSX表示的对象</code></font>，然后由React库来根据返回对象决定如何渲染</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="jsx">JSX</h3>
+<ul>
+<li>
+<p>和原生HTML定义事件的唯一区别就是<code>JSX</code>采用<strong>驼峰</strong>写法来描述事件名称，大括号中仍然是标准的JavaScript表达式，<strong>返回一个事件处理函数</strong>。React并不会真正的绑定事件到每一个具体的元素上，而是采用事件代理的模式：在<strong>根节点document</strong>上为每种事件添加唯一的Listener，然后通过事件的<strong>target找到真实的触发元素</strong>。这样从触发元素到顶层节点之间的所有节点如果有绑定这个事件，React都会触发对应的事件处理函数。这就是所谓的React<strong>模拟事件系统</strong>。尽管整个事件系统由React管理，但是其API和使用方法与原生事件一致。</p>
+</li>
+<li>
+<p>在JSX中使用样式和真实的样式也很类似，通过style属性来定义，但和真实DOM不同的是，<strong>属性值不能是字符串而必须为对象</strong>。</p>
+<pre><code class="language-jsx">&lt;div style={{color: '#ff0000', fontSize: 14}}&gt;Hello World.&lt;/div&gt;
+
+{/*或者（注释要这么写）*/}  
+
+var style = {
+  color: '#ff0000',
+  fontSize: 14
+};
+
+var node = &lt;div style={style}&gt;HelloWorld.&lt;/div&gt;;
+</code></pre>
+</li>
+</ul>
+<blockquote>
+<p>**注意：**原生HTML元素名以小写字母开头，而自定义的React类名以<font color='red'><strong>大写字母</strong></font>开头，比如HelloMessage不能写成helloMessage，除此之外还需要注意组件类只能包含<font color='red'><strong>一个顶层标签</strong></font>，否则也会报错。</p>
+</blockquote>
+<h3 id="受控组件">受控组件</h3>
+<h4 id="input标签">input标签</h4>
+<ul>
+<li>在React中，<code>&lt;input&gt;</code>会用<strong>value属性</strong>来代替子节点，value属性的值总是和文本输入框的最新内容一致，如果想要指定默认值，可以使用<strong>defaultValue属性</strong>。</li>
+</ul>
+<h4 id="textarea标签">textarea标签</h4>
+<ul>
+<li>在React中，<code>&lt;textarea&gt;</code>会用<strong>value属性</strong>来替代子节点。这样的话，表单中的<code>&lt;textarea&gt;</code>非常类似于使用单行输入的表单。</li>
+</ul>
+<h4 id="select标签">select标签</h4>
+<ul>
+<li>
+<p>在React中，并不适用之前的<code>selected</code>属性，而是在根<code>select</code>标签上用<strong>value属性</strong>来表示选中的项。这在受控组件中更为方便。例如：</p>
+<pre><code class="language-jsx">&lt;select value={this.state.value} onChange={this.handleChange}&gt;
+    &lt;option value='grapefruit'&gt;Grapefruit&lt;/option&gt;
+    &lt;option value='lime'&gt;Lime&lt;/option&gt;
+    &lt;option value='coconut'&gt;Coconut&lt;/option&gt;
+    &lt;option value='mango'&gt;Mango&lt;/option&gt;
+&lt;/select&gt;
+</code></pre>
+</li>
+</ul>
+<p><strong>总结：</strong><code>&lt;input type=&quot;text&quot;&gt;、&lt;textarea&gt;和&lt;select&gt;</code>都十分类似——他们都通过传入一个<font color='red'><strong>value属性</strong></font>来实现对组件的控制。</p>
+<h4 id="typescript中使用usedispatch">TypeScript中使用useDispatch</h4>
+<pre><code class="language-javascript"> Promise.resolve(
+    dispatch(
+     	submitRegistryConfig(REGISTRY_DRAWER_STATEID, values, mode === &quot;edit&quot; ? &quot;PUT&quot; : &quot;POST&quot;)
+ 	)
+ ).then(() =&gt; {
+ 	closeDrawer();
+ 	callback();
+ });
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://xiewangmei.github.io/tag/0z8xeoWao/" class="tag">
+                    React
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://xiewangmei.github.io/post/react-and-antd/">
+                  <h3 class="post-title">
+                    React &amp; Antd
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>
