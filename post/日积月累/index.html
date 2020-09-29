@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>Tool | Blog-wmxie</title>
+<title>日积月累 | Blog-wmxie</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
@@ -18,7 +18,13 @@
 
 
 
-    <meta name="description" content="念念不忘，必有回响~">
+    <meta name="description" content="
+
+接口请求Status(blocked:other)，出现这种情况是被浏览器插件（如AdBlock插件）当广告拦截了
+
+
+jquery 解决favicon.ico 404找不到的问题，可以在html头部添加&lt;link rel=&qu..." />
+    <meta name="keywords" content="" />
   </head>
   <body>
     <div id="app" class="main">
@@ -88,35 +94,59 @@
 
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
-          <h2 class="current-tag">标签: Tool</h2>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://xiewangmei.github.io/post/vscode/">
-                  <h2 class="post-title">VSCode常用快捷键</h2>
-                </a>
-                <div class="post-date">
-                  2020-09-29
-                </div>
-                <div class="post-abstract">
-                  <ul>
-<li>ctrl+Alt+I  插入作者注释</li>
-<li>F1  打开命令面板</li>
-<li>Ctrl+Shift+D 切换到调试视图</li>
-<li>Ctrl+~ 打开终端调试窗口</li>
-<li>F1 打开命令行</li>
+          <div class="post-detail">
+            <h2 class="post-title">日积月累</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <ol>
+<li>
+<p>接口请求Status(blocked:other)，出现这种情况是被浏览器插件（如AdBlock插件）当广告拦截了</p>
+</li>
+<li>
+<p>jquery 解决favicon.ico 404找不到的问题，可以在html头部添加&lt;link <em>rel</em>=&quot;shortcut icon&quot; <em>href</em>=&quot;#&quot;/&gt;</p>
+</li>
+<li>
+<p>for..of ES6提供可以直接遍历值而不是数组下标</p>
+<pre><code class="language-javascript">var myArray = [1,2,3];
+for(var v of myArray){
+    console.log(v);
+}
+//1
+//2
+//3
+</code></pre>
+<p>for..of循环首先会向被访问对象请求一个迭代器对象，然后通过调用迭代器对象的next()方法来遍历所有返回值</p>
+</li>
+<li>
+<p>K8s kubelet &amp; kubeadm &amp; kubectl 介绍</p>
+<ul>
+<li>kubelet: 运行在cluster所有节点上，负责启动POD和容器</li>
+<li>kubeadm: 用于初始化cluster</li>
+<li>kubectl: kubenetes命令行工作，通过kubectl可以部署和管理应用，查看各种资源，创建，删除和更新组件</li>
 </ul>
+</li>
+<li>
+<p>npx create-react-app 报网络错误时，可以尝试将之前安装的npm create-react-app删掉（<code>npm uninstall -g create-react-app</code>），同时修改registry为淘宝镜像</p>
+</li>
+</ol>
 
-                </div>
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://xiewangmei.github.io/post/vscode/">
+                  <h3 class="post-title">
+                    VSCode常用快捷键
+                  </h3>
+                </a>
               </div>
-              
-            </article>
-          
+            
 
-          <div class="pagination-container">
-  
-  
-</div>
+            
+
+          </div>
 
         </div>
       </div>

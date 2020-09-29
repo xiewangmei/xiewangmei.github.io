@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://xiewangmei.github.io</id>
     <title>Blog-wmxie</title>
-    <updated>2020-09-29T05:23:08.760Z</updated>
+    <updated>2020-09-29T05:31:10.822Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://xiewangmei.github.io"/>
     <link rel="self" href="https://xiewangmei.github.io/atom.xml"/>
@@ -10,6 +10,141 @@
     <logo>https://xiewangmei.github.io/images/avatar.png</logo>
     <icon>https://xiewangmei.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Blog-wmxie</rights>
+    <entry>
+        <title type="html"><![CDATA[React Native]]></title>
+        <id>https://xiewangmei.github.io/post/react-native/</id>
+        <link href="https://xiewangmei.github.io/post/react-native/">
+        </link>
+        <updated>2020-09-29T05:29:57.000Z</updated>
+        <content type="html"><![CDATA[<center><h2>React Native</h2></center>
+<h3 id="developer-menu">Developer Menu</h3>
+<p>Andriod模拟器：可以通过Ctrl+M快键键快速打开</p>
+<p>IOS模拟器：可以通过Ctrl+D快捷键快速打开</p>
+<h3 id="flatlist">FlatList</h3>
+<ul>
+<li>FlatList会安排视图的渲染，只显示当前在屏幕上的那些元素。而那些已经渲染好了的但移动到了屏幕之外的元素，则会从原生视图结构中移除（以提高性能）</li>
+</ul>
+<h3 id="platform模块">Platform模块</h3>
+<ul>
+<li>
+<p>Platform.OS上会返回<code>ios</code>，而在Android设备或模拟器上则会返回<code>android</code></p>
+</li>
+<li>
+<p>有个实用的方法是Platform.select()，它可以以Platform.OS为key，从传入的对象中返回对应平台的值</p>
+<pre><code class="language-react">import { Platform, StyleSheet } from &quot;react-native&quot;;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    ...Platform.select({
+      ios: {
+        backgroundColor: &quot;red&quot;
+      },
+      android: {
+        backgroundColor: &quot;blue&quot;
+      }
+    })
+  }
+});
+</code></pre>
+<p>该方法可以接受任何合法类型的参数，也可以直接用它针对不同平台返回不同的组件，</p>
+<pre><code class="language-react">const Component = Platform.select({
+	ios: () =&gt; require(&quot;ComponentIOS&quot;),
+	android: () =&gt; require(&quot;CompnentAndroid&quot;)
+})();
+&lt;Component/&gt;
+</code></pre>
+</li>
+<li>
+<p>检测Android版本，在Android上，<code>Version</code>属性是一个数字，表示Android的api level：</p>
+<pre><code class="language-react">import {Platform} from 'react-native';
+if(Platform.Version === 25){
+	console.log(&quot;Running on Nougat&quot;);
+}
+</code></pre>
+</li>
+<li>
+<p>检测iOS版本，在iOS上<code>Version</code>属性是<code>-[UIDevice systemVersion]</code>的返回值，具体形式为一个表示当前系统版本的字符串，比如可能是“10.3”</p>
+<pre><code class="language-react">import { Platform } from &quot;react-native&quot;;
+const majorVersionIOS = parseInt(Platform.Version, 10);
+if(majorVersionIOS &lt;= 9) {
+	console.log(&quot;Work around a change in behavior&quot;);
+}
+</code></pre>
+</li>
+</ul>
+<h3 id="特定平台扩展名">特定平台扩展名</h3>
+<ul>
+<li>
+<p>当不同平台的代码逻辑较为复杂时，最好是放到不同的文件里，这时候我们可以使用特定平台扩展名。React Native会检测某个文件是否具有<code>.ios.</code>或.<code>android.</code>的扩展名，然后根据当前运行的平台自动加载正确对应的文件。比如可以创建这种组件，然后去掉平台扩展名直接引用：</p>
+<pre><code class="language-javascript">BigButton.ios.js
+BigButton.android.js
+
+import BigButton from './BigButton'
+</code></pre>
+<p>React Native会根据运行平台的不同自动引入正确对应的组件。</p>
+</li>
+<li>
+<p>如果希望在web端复用React Native的代码，那么还可以使用<code>.native.js</code>的扩展名。此时iOS和Android会使用<code>BigButton.native.js</code>文件，而web端会使用<code>BigButton.js</code></p>
+</li>
+</ul>
+<h3 id="图片">图片</h3>
+<h4 id="静态图片资源">静态图片资源</h4>
+<ul>
+<li>
+<p>可以使用<code>@2x</code>，<code>@3x</code>这样的文件名后缀，来为不同的屏幕精度提供图片。比如说，iPhone7会使用check@2x.png，而iPhone 7 plus或是Nexus 5上则会使用check@3x.png。如果没有图片恰好满足屏幕分辨率，则会自动选中最接近的一个图片</p>
+<p><em>注意：如果添加图片的时候packager正在运行，则可能需要重启packager以便能正确引入新添加的图片</em></p>
+</li>
+</ul>
+<h3 id="textinput">TextInput</h3>
+<ul>
+<li>
+<p>placeholderTextColor 设置占位文字字体颜色</p>
+<pre><code class="language-jsx">&lt;TextInput placeholderTextColor=&quot;#a5a5a5&quot; /&gt;
+</code></pre>
+</li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[日积月累]]></title>
+        <id>https://xiewangmei.github.io/post/日积月累/</id>
+        <link href="https://xiewangmei.github.io/post/日积月累/">
+        </link>
+        <updated>2020-09-29T05:23:55.000Z</updated>
+        <content type="html"><![CDATA[<ol>
+<li>
+<p>接口请求Status(blocked:other)，出现这种情况是被浏览器插件（如AdBlock插件）当广告拦截了</p>
+</li>
+<li>
+<p>jquery 解决favicon.ico 404找不到的问题，可以在html头部添加&lt;link <em>rel</em>=&quot;shortcut icon&quot; <em>href</em>=&quot;#&quot;/&gt;</p>
+</li>
+<li>
+<p>for..of ES6提供可以直接遍历值而不是数组下标</p>
+<pre><code class="language-javascript">var myArray = [1,2,3];
+for(var v of myArray){
+    console.log(v);
+}
+//1
+//2
+//3
+</code></pre>
+<p>for..of循环首先会向被访问对象请求一个迭代器对象，然后通过调用迭代器对象的next()方法来遍历所有返回值</p>
+</li>
+<li>
+<p>K8s kubelet &amp; kubeadm &amp; kubectl 介绍</p>
+<ul>
+<li>kubelet: 运行在cluster所有节点上，负责启动POD和容器</li>
+<li>kubeadm: 用于初始化cluster</li>
+<li>kubectl: kubenetes命令行工作，通过kubectl可以部署和管理应用，查看各种资源，创建，删除和更新组件</li>
+</ul>
+</li>
+<li>
+<p>npx create-react-app 报网络错误时，可以尝试将之前安装的npm create-react-app删掉（<code>npm uninstall -g create-react-app</code>），同时修改registry为淘宝镜像</p>
+</li>
+</ol>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[VSCode常用快捷键]]></title>
         <id>https://xiewangmei.github.io/post/vscode/</id>
