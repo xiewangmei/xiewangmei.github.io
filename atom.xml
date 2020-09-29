@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://xiewangmei.github.io</id>
     <title>Blog-wmxie</title>
-    <updated>2020-09-29T05:31:10.822Z</updated>
+    <updated>2020-09-29T05:32:02.065Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://xiewangmei.github.io"/>
     <link rel="self" href="https://xiewangmei.github.io/atom.xml"/>
@@ -151,14 +151,6 @@ for(var v of myArray){
         <link href="https://xiewangmei.github.io/post/vscode/">
         </link>
         <updated>2020-09-29T03:33:22.000Z</updated>
-        <summary type="html"><![CDATA[<ul>
-<li>ctrl+Alt+I  插入作者注释</li>
-<li>F1  打开命令面板</li>
-<li>Ctrl+Shift+D 切换到调试视图</li>
-<li>Ctrl+~ 打开终端调试窗口</li>
-<li>F1 打开命令行</li>
-</ul>
-]]></summary>
         <content type="html"><![CDATA[<ul>
 <li>ctrl+Alt+I  插入作者注释</li>
 <li>F1  打开命令面板</li>
@@ -166,7 +158,6 @@ for(var v of myArray){
 <li>Ctrl+~ 打开终端调试窗口</li>
 <li>F1 打开命令行</li>
 </ul>
-<!-- more -->
 ]]></content>
     </entry>
     <entry>
