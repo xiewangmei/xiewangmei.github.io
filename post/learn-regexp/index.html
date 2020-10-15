@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>学会写正则 | Blog-wmxie</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://xiewangmei.github.io/favicon.ico?v=1602727358286">
+<link rel="stylesheet" href="https://xiewangmei.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="1.正则表达式/\d{3}-\d{8}|\d{4}-\d{7,8}/代表什么含义：
+首先观察到表达式中有一个选择符|，而选择符的两边没有圆括号成对出现，那么可以推断出该表达式是匹配\d{3}-\d{8}或\d{4}-\{7,8}两种模式。
+..." />
+    <meta name="keywords" content="xyqiu" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://xiewangmei.github.io">
+        <img src="https://xiewangmei.github.io/images/avatar.png?v=1602727358286" class="site-logo">
+        <h1 class="site-title">Blog-wmxie</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="https://xiewangmei.github.io/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      念念不忘，必有回响~
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://xiewangmei.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">学会写正则</h2>
+            <div class="post-date">2020-10-15</div>
+            
+            <div class="post-content" v-pre>
+              <p>1.正则表达式<code>/\d{3}-\d{8}|\d{4}-\d{7,8}/</code>代表什么含义：</p>
+<p>首先观察到表达式中有一个选择符<code>|</code>，而选择符的两边没有圆括号成对出现，那么可以推断出该表达式是匹配<code>\d{3}-\d{8}</code>或<code>\d{4}-\{7,8}</code>两种模式。</p>
+<p>模式<code>\d{3}-\d{8}</code>：三位数字和八位数字，中间以<code>-</code>连接，例：010-88888888</p>
+<p>模式<code>\d{4}-\d{7,8}</code>：四位数字和七(八)位数字，中间以<code>-</code>连接，例：0512-88888888</p>
+<p>到现在应该可以看出，这个正则是匹配座机号码。</p>
+<p>但是，中国的座机号是按一定的规律组成，上面的表达式不完全正确。例如：000-00000000 明显不是一个合法的座机号。<strong>思考如何改进</strong>？</p>
+<p>2.正则表达式<code>/(?=.{8,31})(?=.*\d.*\d.*)(?=.*[a-z].*[a-z].*)(?=.*[A-Z].*[A-Z].*)(?=.*[^a-zA-Z0-9].*[^a-zA-Z0-9].*)/</code>代表什么含义（拷贝自智源项目）：</p>
+<p>观察正则表达式的结构，发现其是由五个<code>先行断言</code>组成。<code>(?=正则)</code>表示在这个位置之后的字符串必须符合<code>?=</code>之后的正则。而我们知道先行断言有一个特点：不消耗字符串。那么也就是说在这之后的正则还是从同一位置开始匹配。</p>
+<p><code>(?=.{8,31})</code>：字符串长度为 8-31</p>
+<p><code>(?=.*\d.*\d.*)</code>：必须包含两个数字</p>
+<p><code>(?=.*[a-z].*[a-z].*)</code>：必须包含两个小写字母</p>
+<p><code>(?=.*[A-Z].*[A-Z].*)</code>：必须包含两个大写字母</p>
+<p><code>(?=.*[^a-zA-Z0-9].*[^a-zA-Z0-9].*)</code>必须包含两个特殊字符</p>
+<p>显而易见，这是用来校验密码强度的正则。</p>
+<p><strong>小结：</strong></p>
+<p>我们拿到一个正则表达式，不管它有多复杂，千万不要被吓到，需要一步步地将其分解为多个子表达式，然后分析每个子表达式匹配的是何种模式，必要时尝试着举几个例子来验证自己的想法是否正确，最终纵观整体一般都能理解正则表达式的含义。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://xiewangmei.github.io/tag/xyqiu/" class="tag">
+                    xyqiu
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://xiewangmei.github.io/post/xue-hui-xie-zheng-ze/">
+                  <h3 class="post-title">
+                    学会写正则
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

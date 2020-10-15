@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>正则表达式基础 | Blog-wmxie</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://xiewangmei.github.io/favicon.ico?v=1602727358286">
+<link rel="stylesheet" href="https://xiewangmei.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="正则表达式“真香”
+开始学习正则表达式之前，我们先看一个简单的编程题：
+已知一个字符串'bfb2134rqf5676gur35bgbqd544oihf'，要求提取出字符串中的所有连续数字段，即输出[2134, 5676, 35, 544]。..." />
+    <meta name="keywords" content="xyqiu" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://xiewangmei.github.io">
+        <img src="https://xiewangmei.github.io/images/avatar.png?v=1602727358286" class="site-logo">
+        <h1 class="site-title">Blog-wmxie</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="https://xiewangmei.github.io/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      念念不忘，必有回响~
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://xiewangmei.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">正则表达式基础</h2>
+            <div class="post-date">2020-10-15</div>
+            
+            <div class="post-content" v-pre>
+              <h2 id="正则表达式真香">正则表达式“真香”</h2>
+<p>开始学习正则表达式之前，我们先看一个简单的编程题：</p>
+<p>已知一个字符串'bfb2134rqf5676gur35bgbqd544oihf'，要求提取出字符串中的所有连续数字段，即输出[2134, 5676, 35, 544]。</p>
+<p>传统思路：</p>
+<pre><code class="language-javascript">function findNumBlock(str) {
+    var temp = '';
+    var result = [];
+    for (var i = 0; i &lt; str.length; i++) {
+        var currentChar = str.charAt(i);
+        if (str.charAt(i) &lt;= '9' &amp;&amp; str.charAt(i) &gt;= '0') {
+            temp += currentChar;
+        } else {
+            if (temp) {
+                result.push(temp);
+                temp = '';
+            }
+        }
+    }
+    return result;
+}
+var str = 'bfb2134rqf5676gur35bgbqd544oihf';
+findNumBlock(str);
+</code></pre>
+<p><strong>思考：这段代码有没有什么问题？</strong></p>
+<p>正则思路：</p>
+<pre><code class="language-javascript">var reg = /\d+/g;
+var str = 'bfb2134rqf5676gur35bgbqd544oihf';
+str.match(reg)
+</code></pre>
+<p>显而易见，有时候在处理字符串的问题上，利用好正则会方便很多。</p>
+<h2 id="正则表达式的基本概念">正则表达式的基本概念</h2>
+<h3 id="定义">定义</h3>
+<p>正则表达式是对字符串操作的一种逻辑公式，就是用事先定义好的一些特定字符、及这些特定字符的组合，组成一个“规则字符串”，这个“规则字符串”用来表达对字符串的一种过滤逻辑。</p>
+<h3 id="作用">作用</h3>
+<p>给定一个正则表达式和另一个字符串，我们可以达到如下的目的：</p>
+<ul>
+<li>给定的字符串是否符合正则表达式的过滤逻辑（称作“匹配”）</li>
+<li>可以通过正则表达式，从字符串中获取我们想要的特定部分</li>
+</ul>
+<h3 id="特点">特点</h3>
+<ul>
+<li>灵活性、逻辑性和功能性非常的强；</li>
+<li>可以迅速地用极简单的方式达到字符串的复杂控制。</li>
+<li>对于刚接触的人来说，比较晦涩难懂。</li>
+</ul>
+<p><mark><mark><mark><mark><mark><mark><mark><mark><mark><mark><mark><mark><mark><mark><mark><mark><mark><mark><mark><mark>分割线</mark></mark></mark></mark></mark></mark></mark></mark></mark></mark></mark></mark></mark></mark></mark></mark></mark></mark></mark></mark></p>
+<h2 id="正则表达式的创建">正则表达式的创建</h2>
+<p>新建正则表达式有两种方式：</p>
+<ul>
+<li>使用<code>字面量</code>，以斜杠表示开始和结束</li>
+</ul>
+<pre><code class="language-javascript">var regex = /abc/;
+</code></pre>
+<ul>
+<li>使用<code>RegExp</code>构造函数</li>
+</ul>
+<pre><code class="language-javascript">var regex = new RegExp('abc');
+</code></pre>
+<p>这两种方式是等价的，都新建了一个内容为<code>\d+</code>的正则表达式对象。<br>
+**主要区别：**第一种方法在引擎编译代码时就会新建正则表达式，第二种则在运行时才去新建，所以比较下来前者的效率比较高。此外，第一种方法也比较便利和直观，实际使用中，基本上都是采用第一种方式。</p>
+<p><code>RegExp</code>构造函数还可以接收第二个参数，用于表示<code>修饰符</code>：</p>
+<pre><code class="language-javascript">var regex = /abc/i;
+// 等价于
+var regex = new RegExp('abc', 'i');
+</code></pre>
+<p>有些正则表达式用构造函数形式需要<code>转义</code>，例如文首的程序题中的正则表达式替换后：</p>
+<pre><code class="language-javascript">var regex = new RegExp('\\d+', 'g');
+</code></pre>
+<p>这里再次验证了通过字面量创建正则表达式的便利性。</p>
+<h2 id="正则对象的实例属性">正则对象的实例属性</h2>
+<p>正则对象的实例属性分为两类。</p>
+<p>一类是<code>修饰符</code>相关，用于了解设置了什么<code>修饰符</code>：</p>
+<ul>
+<li><code>RegExp.prototype.global</code>： 返回一个布尔值，表示是否设置了<code>g</code>修饰符。</li>
+<li><code>RegExp.prototype.ignoreCase</code>：返回一个布尔值，表示是否设置了<code>i</code>修饰符。</li>
+<li><code>RegExp.prototype.multiline</code>：返回一个布尔值，表示是否设置了<code>m</code>修饰符。</li>
+<li><code>RegExp.protptype.flags</code>：返回一个字符串，包含了已经设置的所有修饰符，按字母排序。</li>
+</ul>
+<p>以上四个属性都是只读的</p>
+<pre><code class="language-javascript">var regex = /abc/gim;
+console.log(regex.global);//true
+console.log(regex.ignoreCase);//true
+console.log(regex.multiline);//true
+console.log(regex.flags);//&quot;gim&quot;
+</code></pre>
+<p>另一类是与<code>修饰符无关</code>的属性，主要是下面两种：</p>
+<ul>
+<li><code>RegExp.prototype.lastIndex</code>：返回一个整数，表示<strong>下一次开始搜索的位置</strong>。该属性可读写，但是只在进行连续搜索时有意义，详细介绍请看后文。</li>
+<li><code>RegExp.prototype.source</code>：返回正则表达式的字符串形式（不包括反斜杠），该属性只读。</li>
+</ul>
+<pre><code class="language-javascript">var regex = /abc/gim;
+console.log(regex.lastIndex);//0
+console.log(regex.source);//abc
+</code></pre>
+<h2 id="正则对象的实例方法">正则对象的实例方法</h2>
+<h3 id="regexpprototypetest">RegExp.prototype.test()</h3>
+<p>正则对象的<code>test</code>方法返回一个布尔值，表示当前字符串能否匹配参数字符串。</p>
+<pre><code class="language-javascript">// 验证参数字符串中是否包含&quot;hillstone&quot;，结果为true
+/hillstone/.test('hillstone network');
+</code></pre>
+<p>如果正则表达式带有<code>g</code>修饰符，那么每一次<code>test</code>方法都从上次结束的位置开始向后匹配。</p>
+<pre><code class="language-javascript">// 匹配字符串中是否包含字母'n'
+var regex = /n/g;
+var str = 'hillstone network';
+
+console.log(regex.lastIndex);//0
+console.log(regex.test(str));//第一次test结果：true
+
+console.log(regex.lastIndex);//8
+console.log(regex.test(str));//第二次test结果：true
+
+console.log(regex.lastIndex);//11
+console.log(regex.test(str));//第三次test结果：false
+</code></pre>
+<p>上面代码的正则表达式使用了<code>g</code>修饰符，表示是<code>全局搜索</code>，会有多个结果。接着，三次使用<code>test</code>方法，每一次开始搜索的位置都是<code>上一次匹配的后一个位置</code>。</p>
+<p>前面在介绍<code>lastIndex</code>属性时有提到过，该属性是可读写的，因此带有<code>g</code>修饰符的正则对象，可以通过<code>lastIndex</code>属性指定开始搜索的位置。</p>
+<pre><code class="language-javascript">// 匹配字符串中是否包含字母'i'
+var regex = /i/g;
+var str = 'hillstone network';
+regex.lastIndex = 2;//从index:2的位置开始匹配
+console.log(regex.test(str));//第一次test结果：false
+console.log(regex.test(str));//第二次test结果：true
+</code></pre>
+<p>观察上面连续两次的匹配结果发现：第一次匹配失败，第二次却成功了？</p>
+<p>这是因为正则表达式在匹配失败后，会将<code>lastIndex</code>重置为0，这样第二次匹配时从0开始就可以匹配到字母'i'了。</p>
+<p><strong>注意</strong>：带有<code>g</code>修饰符时，正则表达式内部会记住上一次的<code>lastIndex</code>属性值，这时<strong>不应该替换带匹配的字符串</strong>，否则会出现一些难以察觉的错误。</p>
+<pre><code class="language-javascript">var regex = /aa/g;
+console.log(regex.test('aa'));//第一次test结果：true
+console.log(regex.lastIndex);//lastIndex置为2
+console.log(regex.test('-aa-'));//第二次test结果：false
+</code></pre>
+<p><code>lastIndex</code>只对同一个正则表达式有效：</p>
+<pre><code class="language-javascript">var count = 0 ;
+while(/a/g.test('bab')) {
+    count++;
+}
+console.log(count);
+</code></pre>
+<p>这段代码看起来意图&quot;很明显&quot;：循环调用正则表达式<code>/a/g</code>的<code>test</code>方法来匹配一个字符串，直到匹配结果为false，退出循环，输出匹配到的个数。但是实际情况是，这里形成了一个<strong>死循环</strong>。原因是<code>while</code>循环的每次匹配条件都是一个<strong>新的正则对象实例</strong>，导致<code>lastIndex</code>属性始终为0。</p>
+<p>用<code>构造函数</code>改写一下就能很容易看出问题所在：</p>
+<pre><code class="language-javascript">var count = 0 ;
+while(new RegExp('a', 'g').test('bab')) {//每次都是一个新的正则对象
+    count++;
+}
+console.log(count);
+</code></pre>
+<p>如果正则模式是一个空字符串，则匹配所有的字符串：</p>
+<pre><code class="language-javascript">var regex = new RegExp('');
+console.log(regex.test('a'));//true
+console.log(regex.test('b'));//true
+</code></pre>
+<h3 id="regexpprototypeexec">RegExp.prototype.exec()</h3>
+<p>正则对象的<code>exec</code>方法，用来返回匹配结果。如果发现匹配，就返回一个数组，成员是匹配成功的子字符串，否则，返回<code>null</code>。</p>
+<pre><code class="language-javascript">var str = 'hillstone';
+var regex1 = /hillstone/;
+var regex2 = /network/;
+console.log(regex1.exec(str));//['hillstone']
+console.log(regex2.exec(str));//null
+</code></pre>
+<p>上述代码中，<code>regex1</code>匹配成功，返回一个数组，成员是匹配结果；<code>regex2</code>匹配失败，返回<code>null</code>。</p>
+<p>如果正则表达式包含圆括号（包含“组匹配”），则返回的数组会包括多个成员。第一个成员是整个匹配成功的结果，后面的成员就是圆括号对应的匹配成功的组。也就是说，第二个成员对应第一个括号，第三个成员对应第二个括号，以此类推。整个数组的<code>length</code>属性等于组匹配的数量再加1。</p>
+<pre><code class="language-javascript">var str = '_x_x';
+var regex = /_(x)_/;
+console.log(regex.exec(s));//匹配结果：['_x_', 'x']
+</code></pre>
+<p>结果数组的第一个成员为整个匹配的结果，第二个成员为组匹配的结果。</p>
+<p><code>exec</code>方法的返回数组中还包含以下两个属性：</p>
+<ul>
+<li><code>input</code>：整个待匹配字符串。</li>
+<li><code>index</code>：整个正则匹配成功的开始位置（从0开始计数）。</li>
+</ul>
+<pre><code class="language-javascript">var regex = /a(b+)a/;
+var arr = r.exec('_abbba_aba_');
+console.log(arr);//['abbbx', 'bbb']
+console.log(arr.index);//1
+console.log(arr.input);//'_abbba_aba_'
+</code></pre>
+<p>上述代码中<code>index</code>值为1，是因为从原字符串的第二个位置开始匹配成功。</p>
+<p>如果正则表达式加上<code>g</code>修饰符，则可以使用多次<code>exec</code>方法，下一次搜索的位置<strong>从上一次匹配成功结束的位置开始</strong>：</p>
+<pre><code class="language-javascript">var regex = /a/g;
+var str = 'abc_abc_abc';
+
+var firstMatch = regex.exec(str);
+console.log(firstMatch);//['a']
+console.log(firstMatch.index);//0
+console.log(regex.lastIndex);//1
+
+var secondMatch = regex.exec(str);
+console.log(secondMatch);//['a']
+console.log(secondMatch.index);//4
+console.log(regex.lastIndex);//5
+
+var thirdMatch = regex.exec(str);
+console.log(thirdMatch);//['a']
+console.log(thirdMatch.index);//8
+console.log(regex.lastIndex);//9
+
+var forthMatch = regex.exec(str);
+console.log(forthMatch);//null
+console.log(regex.lastIndex);//0
+</code></pre>
+<p>上述代码连续调用四次<code>exec</code>方法，前三次匹配成功，找出了字符串中所有字母'a'，第四次匹配失败，正则表达式的<code>lastIndex</code>重置为0，这时候我们调用<code>exec</code>则再次匹配成功。</p>
+<p>考虑到<code>g</code>修饰符允许多次匹配的特点，我们对上述代码进行改造，即可实现循环找出所有匹配项：</p>
+<pre><code class="language-javascript">var regex = /a/g;
+var str = 'abc_abc_abc';
+while(true) {
+    var result = regex.exec(str);
+    if(!result) break;
+    console.log('Current matched index is: ' + result.index);
+}
+</code></pre>
+<p>此外，指定正则对象的<code>lastIndex</code>属性在这里同样适用，<code>exec</code>方法会从指定的<code>lastIndex</code>开始向后匹配。</p>
+<h2 id="字符串的实例方法">字符串的实例方法</h2>
+<p>字符串的实例方法，有四种与正则表达式有关：</p>
+<ul>
+<li>String.prototype.match()：返回一个数组，成员是所有匹配的子字符串。</li>
+<li>String.prototype.search()：按照给定的正则表达式进行搜索，返回一个整数，表示匹配开始的位置。</li>
+<li>String.prototype.replace()：按照给定的正则表达式进行替换，返回替换后的字符串。</li>
+<li>String.prototype.split()：按照给定的正则表达式进行字符串分割，返回一个数组，包含分割后的各个成员。</li>
+</ul>
+<h3 id="stringprototypematch">String.prototype.match()</h3>
+<p>字符串实例对象的<code>match</code>方法对字符串进行正则匹配，返回匹配结果。</p>
+<pre><code class="language-javascript">var str = 'hillstone network';
+var regex1 = /n/;
+var regex2 = /a/;
+console.log(str.match(regex1));//['n']
+console.log(str.match(regex2));//null
+</code></pre>
+<p>从上述代码可以看到，字符串的<code>match</code>方法与正则对象的<code>exec</code>方法类似：匹配成功返回一个数组，匹配失败返回<code>null</code>。</p>
+<p>如果正则表达式包含<code>g</code>修饰符，则<code>match</code>方法与正则对象的<code>exec</code>方法行为有所区别：<strong>会一次性返回包含所有匹配结果的数组</strong>：</p>
+<pre><code class="language-javascript">var regex = /a/g;
+var str = 'abcabc';
+console.log(regex.exec(str));//['a']
+console.log(str.match(regex));//['a', 'a']
+</code></pre>
+<p>设置正则对象的<code>lastIndex</code>属性，对<code>match</code>方法<strong>无效</strong>，匹配总是从字符串的第一个字符开始：</p>
+<pre><code class="language-javascript">var regex = /a/g;
+var str = 'abcabc';
+regex.lastIndex = 4;
+console.log(str.match(regex));//['a', 'a']
+console.log(regex.lastIndex);//0
+</code></pre>
+<h3 id="stringprototypesearch">String.prototype.search()</h3>
+<p>字符串实例对象的<code>search</code>方法，返回第一个满足条件的匹配结果在整个字符串中的位置，如果没有任何匹配，则返回<code>-1</code>。</p>
+<pre><code class="language-javascript">var regex1 = /a/;
+var regex2 = /b/;
+var str = 'account';
+console.log(str.search(regex1));//字符串index=0的位置匹配到'a',返回0
+console.log(str.search(regex2));//字符串匹配不到'b'，返回-1
+</code></pre>
+<h3 id="stringprototypereplace">String.prototype.replace()</h3>
+<p>字符串实例对象的<code>replace</code>方法可以替换匹配的值。它接受两个参数，第一个是正则表达式，表示搜索模式；第二个是是替换的内容。</p>
+<p>正则表达式如果不加<code>g</code>修饰符，就替换第一个匹配成功的值，否则替换所有匹配成功的值：</p>
+<pre><code class="language-javascript">console.log('aaa'.replace('a', 'b'));//'baa'
+console.log('aaa'.replace(/a/, 'b'));//'baa'
+console.log('aaa'.replace(/a/g, 'b'));//'bbb'
+</code></pre>
+<p>最后一个表达式中，带了<code>g</code>修饰符，故字符串中的'a'全部替换为'b'。</p>
+<p><code>replace</code>方法的一个应用就是消除字符串首尾空格：</p>
+<pre><code class="language-javascript">var str = '  #id div.class  ';
+console.log(str.replace(/^\s+|\s+$/g, ''));//'#id div.class'
+</code></pre>
+<p><strong>思考：上面的正则不带<code>g</code>修饰符会是什么结果？</strong></p>
+<p><code>replace</code>方法的第二个参数可以使用美元符号<code>$</code>，用来指代所替换的内容：</p>
+<ul>
+<li><code>$&amp;</code>：匹配的子字符串。</li>
+<li><code>$`</code>：匹配结果前面的文本。</li>
+<li><code>$'</code>：匹配结果后面的文本。</li>
+<li><code>$n</code>：匹配成功的第<code>n</code>组内容，<code>n</code>是从1开始的自然数。</li>
+<li><code>$$</code>：指代美元符号<code>$</code>。</li>
+</ul>
+<pre><code class="language-javascript">var str = 'How to use Regex Expression in the replace method.';
+// 结果为How to use &quot;Regex Expression&quot; in the replace method.
+console.log(str.replace(/Regex Expression/, '&quot;$&amp;&quot;'));
+// 结果为How to use &quot;How to use&quot; in the replace method.
+console.log(str.replace(/Regex Expression/, '&quot;$`&quot;'));
+// 结果为How to use &quot; in the replace method.&quot; in the replace method.
+console.log(str.replace(/Regex Expression/, '&quot;$\'&quot;'));
+// 结果为How to use replace method in the Regex Expression.
+console.log(str.replace(/(Regex Expression) in the (replace method)/, '$2 in the $1'))；
+// 结果为How to use $ in the Regex Expression.
+console.log(str.replace(/Regex Expression/, '$$'))；
+</code></pre>
+<p><code>replace</code>方法的第二个参数还可以是一个函数，将每一个匹配内容替换成函数的返回值：</p>
+<pre><code class="language-javascript">// 字符串中的整数乘以2
+'1 and 12 and 123'.replace(/\d+/g, function(match) {
+    return match * 2;
+});
+// 字符串中的单词首字母大写
+'hillstone network'.replace(/\b\w|\s\w/g, function(match) {
+    return match.toUpperCase();
+});
+</code></pre>
+<p>作为<code>replace</code>方法第二个参数的函数，可以接受多个参数。其中，第一个参数是匹配到的内容，第二个参数是匹配到的组（有多少个匹配到的组，就有多少个对应的参数）。此外，最后还能有两个参数，倒数第二个参数是捕捉到的内容在整个字符串中的位置，最后一个参数是原字符串。下面是一个网页模板替换的例子：</p>
+<pre><code class="language-javascript">const prices = {
+    p1: '$1.99',
+    p2: '$9.99',
+    p3: '$3.68'
+};
+const template = `&lt;div&gt;
+  &lt;span id=&quot;p1&quot;&gt;&lt;/span&gt;
+  &lt;span id=&quot;p1&quot;&gt;&lt;/span&gt;
+  &lt;span id=&quot;p1&quot;&gt;&lt;/span&gt;
+&lt;/div&gt;`;
+template.replace(/(&lt;span id=&quot;)(.*?)(&quot;&gt;)(&lt;\/span&gt;)/g, function(match, $1, $2, $3, $4){
+    return $1 + $2 + $3 + prices[$2] + $4;
+});
+</code></pre>
+<p>结果如下：</p>
+<pre><code class="language-html">&lt;div&gt;
+  &lt;span id=&quot;p1&quot;&gt;$1.99&lt;/span&gt;
+  &lt;span id=&quot;p1&quot;&gt;$1.99&lt;/span&gt;
+  &lt;span id=&quot;p1&quot;&gt;$1.99&lt;/span&gt;
+&lt;/div&gt;
+</code></pre>
+<h3 id="stringprototypesplit">String.prototype.split()</h3>
+<p>字符串对象的<code>split</code>方法按照正则规则分割字符串，返回一个由分割后的各部分组成的数组。该方法接受两个参数，第一个参数是正则表达式，表示分隔规则，第二个参数（可选）是返回数组的最大成员数。</p>
+<pre><code class="language-javascript">var str = 'a, b,c, d';
+
+// 非正则分割
+console.log(str.split(','));
+// [ 'a', '  b', 'c', ' d' ]
+
+// 正则分割，去除多余空格
+console.log(str.split(/, */));
+// [ 'a', 'b', 'c', 'd' ]
+
+// 指定返回数组的最大成员
+console.log(str.split(/, */, 2));
+// [ 'a', 'b' ]
+</code></pre>
+<p>上面代码使用正则表达式，去除了子字符串的逗号后面的空格。</p>
+<pre><code class="language-javascript">// 例一
+console.log('aaa*a*'.split(/a*/));//['', '*', '*']
+// 例二
+console.log('aaa**a'.split(/a*/));//['', '*', '*', '']
+</code></pre>
+<p>上述代码的分割规则是：<strong>0次或多次的a</strong>，由于正则默认是<code>贪婪匹配</code>，所以例一中有两个分隔符：<code>aaa</code>和<code>a</code>，例二中有三个分隔符：<code>aaa</code>和<code>''</code>和<code>a</code>。</p>
+<p>另外，如果正则表达式带有括号，则括号匹配的部分也会作为数组成员返回：</p>
+<pre><code class="language-javascript">console.log('aaa*a*'.split(/(a*)/));//['', 'aaa', '*', 'a', '*']
+</code></pre>
+<p>上述代码中，最终返回数组的第二项<code>'aaa'</code>和第四项<code>'a'</code>就是组匹配的结果。</p>
+<h2 id="匹配规则">匹配规则</h2>
+<p>正则表达式的规则很复杂，下面一一介绍这些规则。</p>
+<h3 id="字面量字符和元字符">字面量字符和元字符</h3>
+<h4 id="字面量字符">字面量字符</h4>
+<p>大部分字符在正则表达式中，就是字面的含义，比如<code>/a/</code>匹配<code>a</code>，<code>/b/</code>匹配<code>b</code>。如果在正则表达式中，某个字符只表示它字面的含义（就像前面的<code>a</code>和<code>b</code>），那么它们就叫做“字面量字符”。</p>
+<pre><code class="language-javascript">/dog/.test('dog and cat');//true
+</code></pre>
+<p>上面代码中正则表达式的<code>dog</code>，就是字面量字符，表示<code>d</code>、<code>o</code>、<code>g</code>三个字母连在一起，所以测试字符串匹配成功。</p>
+<h4 id="元字符">元字符</h4>
+<p>除了字面量字符，还有一部分字符有特殊含义，不代表字面的意思。它们叫做<code>元字符</code>，主要有以下几个：</p>
+<h5 id="1-点字符">(1) 点字符<code>.</code></h5>
+<p>点字符<code>.</code>匹配除回车<code>\r</code>、换行<code>\n</code>、行分隔符（<code>\u2028</code>）和段分隔符（<code>\u2029</code>）以外的所有字符。注意，对于码点大于<code>0xFFFF</code>字符，点字符不能正确匹配，会认为这是两个字符。</p>
+<pre><code class="language-javascript">/b.g/.test('bag');//true
+/b.g/.test('bug');//true
+/b.g/.test('b g');//true
+/b.g/.test('b.g');//true
+/b.g/.test('buug');//false
+</code></pre>
+<h5 id="2-位置字符和">(2) 位置字符<code>^</code>和<code>$</code></h5>
+<p>位置字符用来提示字符所处的位置，主要有两个字符：</p>
+<ul>
+<li><code>^</code>：字符串的开始位置。</li>
+<li><code>$</code>：字符串的结束位置。</li>
+</ul>
+<pre><code class="language-javascript">/^hillstone/.test('hillstone network');//true
+/hillstone$/.test('suzhou hillstone');//true
+/^hillstone$/.test('hillstone network');//false
+/^hillstone$/.test('hillstone');//true
+</code></pre>
+<h5 id="3-选择符">(3) 选择符<code>|</code></h5>
+<p>竖线符号<code>|</code>在正则中表示“或”关系，例如<code>suzhou|beijing</code>匹配<code>suzhou</code>或<code>beijing</code>。</p>
+<pre><code class="language-javascript">/suzhou|beijing/.test('suzhou hillstone');//true
+/suzhou|beijing/.test('beijing hillstone');//true
+</code></pre>
+<p>多个选择符可以联合使用：</p>
+<pre><code class="language-javascript">var regex = /apple|banana|orange/;//匹配&quot;apple&quot;,&quot;banana&quot;,&quot;orange&quot;的任意一项
+</code></pre>
+<p>选择符会包括它前后的多个字符，比如<code>/ab|cd/</code>指的是匹配<code>ab</code>或者<code>cd</code>，而不是指匹配<code>b</code>或者<code>c</code>。如果想修改这个行为，可以使用圆括号：</p>
+<pre><code class="language-javascript">/a( |\t)b/.test('a\tb');//true
+/a( |\t)b/.test('a b');//true
+</code></pre>
+<p>上述代码表示<code>a</code>和<code>b</code>之间有一个空格或一个制表符。</p>
+<h5 id="4-其它元字符">(4) 其它元字符</h5>
+<p>另外还有一些元字符，如：<code>\</code>、<code>\*</code>、<code>+</code>、<code>?</code>、<code>()</code>、<code>[]</code>、<code>{}</code>等，将在下文介绍。</p>
+<h4 id="转义符">转义符</h4>
+<p>正则表达式中那些有特殊含义的元字符，如果要匹配它们本身，就需要在它们前面加上反斜杠<code>\</code>。比如要匹配<code>+</code>，就要写成<code>\+</code>。</p>
+<pre><code class="language-javascript">/1+1/.test('1+1');//false
+/1\+1/.test('1+1');//true
+</code></pre>
+<p>上述第一个表达式中，<code>+</code>是元字符，所以在正则中不代表其字面含义，需要匹配<code>+</code>本身时，需要对其进行一次转义，所以第二个表达式匹配成功。</p>
+<p>正则表达式中，需要反斜杠<code>\</code>转义的，一共有12个字符：<code>^</code>、<code>.</code>、<code>[</code>、<code>$</code>、<code>(</code>、<code>)</code>、<code>|</code>、<code>*</code>、<code>+</code>、<code>?</code>、<code>{</code>和<code>\</code>。需要特别注意的是，<strong>如果使用<code>RegExp</code>方法生成正则对象，转义需要使用两个斜杠</strong>，因为字符串内部会先转义一次。</p>
+<pre><code class="language-javascript">new RegExp('1\+1').test('1+1');//false
+new RegExp('1\\+1').test('1+1');//true
+</code></pre>
+<p>上述代码中，通过<code>RegExp</code>构造函数创建一个正则对象，而构造函数的参数是一个字符串。而在字符串内部，反斜杠<code>\</code>也是转义字符，所以<code>+</code>会被字符串转义一次，然后再被正则转义一次，最终才创建出正确的正则对象。</p>
+<p>在Chrome的Console中分别输入<code>'1\+1'</code>和<code>'1\\+1'</code>，看看最终得到的字符串是什么？</p>
+<h4 id="特殊字符">特殊字符</h4>
+<p>正则表达式对一些不能打印的特殊字符，提供了表达方法。</p>
+<ul>
+<li><code>\cX</code> 表示<code>Ctrl-[X]</code>，其中的<code>X</code>是A-Z之中任一个英文字母，用来匹配控制字符。</li>
+<li><code>[\b]</code> 匹配退格键(U+0008)，不要与<code>\b</code>混淆。</li>
+<li><code>\n</code> 匹配换行键。</li>
+<li><code>\r</code> 匹配回车键。</li>
+<li><code>\t</code> 匹配制表符 tab（U+0009）。</li>
+<li><code>\v</code> 匹配垂直制表符（U+000B）。</li>
+<li><code>\f</code> 匹配换页符（U+000C）。</li>
+<li><code>\0</code> 匹配<code>null</code>字符（U+0000）。</li>
+<li><code>\xhh</code> 匹配一个以两位十六进制数（<code>\x00</code>-<code>\xFF</code>）表示的字符。</li>
+<li><code>\uhhhh</code> 匹配一个以四位十六进制数（<code>\u0000</code>-<code>\uFFFF</code>）表示的 Unicode 字符。</li>
+</ul>
+<h4 id="字符类">字符类</h4>
+<p>字符类（class）表示有一系列字符可供选择，只要匹配其中一个就可以了。所有可供选择的字符都放在方括号内，比如<code>[abc]</code>表示<code>a</code>、<code>b</code>、<code>c</code>中任选一个匹配：</p>
+<pre><code class="language-javascript">/[abc]/.test('bug');//true
+/[abc]/.test('egg');//false
+</code></pre>
+<p>有两个字符在字符类中有特殊含义：脱字符<code>^</code>和连字符<code>-</code>。</p>
+<h5 id="脱字符">脱字符<code>^</code></h5>
+<p>如果方括号内的第一个字符是<code>^</code>，则表示匹配<strong>至少包含</strong>一个<strong>不在字符类中的字符</strong>的字符串。换句话说，如果方括号内通过脱字符<code>^</code>指定了一堆字符，那么这些字符以外的其它字符都可以匹配。</p>
+<pre><code class="language-javascript">/[^a]/.test('a');//false：不包含a以外的字符
+/[^a]/.test('b');//true：包含a以外的字符
+/[^ab]/.test('a');//false：不包含a、b以外的字符
+/[^ab]/.test('ac');//true：包含a、b以外的字符c
+/[^ab]/.test('c');//true：包含a、b以外的字符c
+</code></pre>
+<p>如果方括号内没有其他字符，即<code>[^]</code>，就表示匹配一切字符，其中包括换行符。相比之下，上文中介绍的点字符<code>.</code>是不包括换行符的。</p>
+<pre><code class="language-javascript">/hillstone[^]network/.test('hillstone network');//true
+/hillstone[^]network/.test('hillstone.network');//true
+/hillstone[^]network/.test('hillstone\rnetwork');//true
+/hillstone.network/.test('hillstone network');//true
+/hillstone.network/.test('hillstone.network');//true
+/hillstone.network/.test('hillstone\rnetwork');//false
+</code></pre>
+<blockquote>
+<p>注意，脱字符只有在<strong>字符类的第一个位置</strong>才有特殊含义，否则就是字面含义。</p>
+</blockquote>
+<h5 id="连字符-">连字符<code>-</code></h5>
+<p>某些情况下，对于连续序列的字符，连字符<code>-</code>用来提供简写形式，表示字符的连续范围。比如，<code>[abc]</code>可以简写成<code>[a-c]</code>，<code>[0123456789]</code>可以简写成<code>[0-9]</code>，同理<code>[A-Z]</code>表示26个大写字母</p>
+<pre><code class="language-javascript">/a-z/.test('b');//false
+/[a-z]/.test('b');//true
+</code></pre>
+<p>上述代码中，第一个例子匹配失败，原因是连字符<code>-</code>若不是出现在方括号<code>[]</code>中，则不具备简写的作用，只代表字面意义，所以只匹配包含<code>a-z</code>这三个字符的字符串。只有当连字符用在方括号中，才表示连续的字符序列。</p>
+<p>常见的字符类简写形式有：<code>/[0-9]/</code>、<code>/[a-z]/</code>、<code>/[A-Z]/</code>、<code>/[0-9a-zA-Z]/</code>。</p>
+<p>另外，不要过分使用连字符，设定一个很大的范围，否则有可能会匹配到一些意料之外的字符。例如：<code>/[A-z]/</code>可能第一眼会认为匹配大写的<code>A</code>到小写的<code>z</code>这52个字母，但是由于在ASCII编码之中，大写字母与小写字母之间还有其他字符，结果就会出现意料之外的结果：</p>
+<pre><code class="language-javascript">// 反斜杠&quot;\&quot;的ASCII码在大写字母和小写字母之间
+/[A-z]/.test('\\');//true
+// 改写方案一：
+/[A-Za-z]/.test('\\');//false
+// 改写方案二：
+/[A-Z]/i.test('\\');//false
+</code></pre>
+<h4 id="预定义模式">预定义模式</h4>
+<p>预定义模式指的是某些常见模式的简写方式：</p>
+<ul>
+<li><code>\d</code>：匹配0-9之间的任一数字，相当于<code>[0-9]</code>。</li>
+<li><code>\D</code>：匹配所有0-9以外的字符，相当于<code>[^0-9]</code>。</li>
+<li><code>\w</code>：匹配任意的字母、数字和下划线，相当于<code>[A-Za-z0-9_]。</code></li>
+<li><code>\W</code>：匹配除所有字母、数字和下划线以外的字符，相当于<code>[^A-Za-z0-9_]</code>。</li>
+<li><code>\s</code>：匹配空格（包括换行符、制表符、空格符等），相当于<code>[ \t\r\n\v\f]</code>。</li>
+<li><code>\S</code>：匹配非空格的字符，相当于<code>[^ \t\r\n\v\f]</code>。</li>
+<li><code>\b</code>：匹配单词的边界字符。</li>
+<li><code>\B</code>：匹配单词的非边界字符。</li>
+</ul>
+<p>下面是一些例子：</p>
+<pre><code class="language-javascript">// \s的例子
+'hillstone network'.match('\\s\\w+');//[&quot; network&quot;]
+
+// \b的例子
+'hillstone network'.match('\\bnetwork');//[&quot;network&quot;]
+'hillstone-network'.match('\\bnetwork');//[&quot;network&quot;]
+'hillstonenetwork'.match('\\bnetwork');//null
+
+// \B 的例子
+'hillstone-network'.match('\\Bnetwork');//null
+'hillstonenetwork'.match('\\Bnetwork');//network
+</code></pre>
+<p>通常，正则表达式遇到换行符<code>\n</code>就会停止匹配：</p>
+<pre><code class="language-javascript">//匹配结果为：“&lt;b&gt;hillstone&lt;/b&gt;&quot;
+/.*/.exec('&lt;b&gt;hillstone&lt;/b&gt;\n&lt;i&gt;network&lt;/i&gt;')[0];
+</code></pre>
+<p>上述代码中，字符串中包含一个换行符<code>\n</code>，导致点字符<code>.</code>无法匹配整个字符串。利用<code>\s</code>和<code>\S</code>这两个预定义模式进行改写，就能完全匹配：</p>
+<pre><code class="language-javascript">//匹配结果为：&quot;&lt;b&gt;hillstone&lt;/b&gt;\n&lt;i&gt;network&lt;/i&gt;&quot;
+/[\s\S]*/.exec('&lt;b&gt;hillstone&lt;/b&gt;\n&lt;i&gt;network&lt;/i&gt;')[0];
+</code></pre>
+<p>上述代码中，<code>[\s\S]</code>指代一切字符。</p>
+<p>至此，我们已经知道有两种方式可以用来匹配一切字符：<code>[^]</code>和<code>[\s\S]</code>。</p>
+<h4 id="重复类">重复类</h4>
+<p>模式的精确匹配次数，使用大括号<code>{}</code>表示，<code>{n}</code>表示恰好出现<code>n</code>次，<code>{n,}</code>表示至少重复<code>n</code>次，<code>{n,m}</code>表示重复次数不少于<code>n</code>次且不多于<code>m</code>次：</p>
+<pre><code class="language-javascript">/lo{2}k/.test('look');//true
+/lo{2,}k/.test('look');//true
+/lo{2,}k/.test('loook');//true
+/lo{2,4}k/.test('loook');//true
+/lo{2,4}k/.test('loooook');//false
+/lo{2,4}/.test('loooook');//true：这里为什么是true？
+</code></pre>
+<h4 id="量词符">量词符</h4>
+<p>量词符用来表示某个模式出现的次数：</p>
+<ul>
+<li><code>?</code>：表示某个模式出现0次或1次，等价于<code>{0,1}</code>。</li>
+<li><code>*</code>：表示某个模式出现0次或多次，等价于<code>{0,}</code>。</li>
+<li><code>+</code>：表示某个模式出现1次或多次，等价于<code>{1,}</code>。</li>
+</ul>
+<pre><code class="language-javascript">// ?：出现0次或1次
+/go?d/.test('gd');//true
+/go?d/.test('god');//true
+/go?d/.test('goooood');//false
+
+// *：出现0次或多次
+/go*d/.test('gd');//true
+/go*d/.test('god');//true
+/go*d/.test('goooood');//true
+
+// +：出现1次或多次
+/go+d/.test('gd');//false
+/go+d/.test('god');//true
+/go+d/.test('goooood');//true
+</code></pre>
+<h4 id="贪婪模式">贪婪模式</h4>
+<p>上一小节的三个量词符，默认情况下都是最大可能匹配，即匹配直到下一个字符不满足匹配规则为止。这种模式叫做<code>贪婪模式</code>。</p>
+<pre><code class="language-javascript">/o?/.exec('oooooo')[0];//'o'
+/o*/.exec('oooooo')[0];//'oooooo'
+/o+/.exec('oooooo')[0];//'oooooo'
+</code></pre>
+<p>上面的正则表示匹配<code>至少1个o</code>形式的字符串，由于正则默认是<code>贪婪匹配</code>，那么会一直匹配到不出现<code>o</code>为止。</p>
+<p>如果要改为<code>非贪婪模式</code>，在量词符后加上一个<code>?</code>即可，这样一旦条件满足就不再往下匹配：</p>
+<pre><code class="language-javascript">/o??/.exec('oooooo')[0];//''
+/o*?/.exec('oooooo')[0];//''
+/o+?/.exec('oooooo')[0];//'o'
+</code></pre>
+<h4 id="修饰符">修饰符</h4>
+<p><code>修饰符</code>表示模式的附加规则，放在正则模式的最尾部，总共有三种：</p>
+<ul>
+<li><code>g</code>修饰符：表示全局匹配。</li>
+<li><code>i</code>修饰符：表示忽略大小写。</li>
+<li><code>m</code>修饰符：表示匹配多行。</li>
+</ul>
+<p>这些修饰符可以单独使用，也可以多个一起使用：</p>
+<pre><code class="language-javascript">'Hillstone'.match(/hillstone/i);//['Hillstone']
+'Hillstone hillstone'.match(/hillstone/gi);//['Hillstone', 'hillstone']
+</code></pre>
+<h5 id="g修饰符"><code>g</code>修饰符</h5>
+<p>默认情况下，第一次匹配成功后，正则对象就停止向下匹配了。<code>g</code>修饰符表示全局匹配，加上它之后，正则对象将匹配全部符合条件的结果，主要用于<strong>搜索</strong>和<strong>替换</strong>。</p>
+<pre><code class="language-javascript">var regex1 = /o/;
+var regex2 = /o/g;
+var str = 'oop';
+
+// 不加g修饰符
+regex1.test(str);//true
+regex1.test(str);//true
+regex1.test(str);//true
+
+// 加g修饰符
+regex2.test(str);//true
+regex2.test(str);//true
+regex2.test(str);//false
+</code></pre>
+<p>上述代码中连续执行三次<code>regex1.test(str)</code>和<code>regex2.test(str)</code>。前者三次都匹配成功，是因为每次都是从字符串的开始位置开始匹配；后者前两次匹配成功，最后一次失败，是因为每次匹配都是从<code>lastIndex</code>开始匹配，第三次匹配的时候<code>lastIndex</code>值为2，对应字符为<code>p</code>，所以匹配失败。</p>
+<h5 id="i修饰符"><code>i</code>修饰符</h5>
+<p>默认情况下，正则对象区分字母的大小写，加上<code>i</code>修饰符后表示忽略大小写。</p>
+<pre><code class="language-javascript">/hillstone/.test('HillStone');//false
+/hillstone/i.test('HillStone');//true
+</code></pre>
+<h5 id="m修饰符"><code>m</code>修饰符</h5>
+<p>默认情况下，字符串无论是否换行都只有一个开始<code>^</code>和结尾<code>$</code>，如果采用多行匹配，那么每一行都有一个开始<code>^</code>和结尾<code>$</code>。</p>
+<pre><code class="language-javascript">// 只有一个开始和结尾
+/^network/.test('hillstone\nnetwork');//false
+/network$/.test('hillstone network\n');//false
+
+// 多个开始和结尾
+/^network/m.test('hillstone\nnetwork');//true
+/network$/m.test('hillstone network\n');//true
+</code></pre>
+<h4 id="组匹配">组匹配</h4>
+<h5 id="概述">概述</h5>
+<p>正则表达式的括号表示分组匹配，括号中的模式可以用来匹配分组的内容：</p>
+<pre><code class="language-javascript">/end+/.test('endd');//true
+/(end)+/.test('endend');//true
+</code></pre>
+<p>上述代码中，第一个模式没有括号，所以<code>+</code>只表示重复字母<code>d</code>，第二个模式有括号，所以<code>+</code>表示重复单词<code>end</code>。</p>
+<p>下面是另外两个分组捕获的例子：</p>
+<pre><code class="language-javascript">// 例子1
+/(.)b(.)/.match('abcabc');//[&quot;abc&quot;, &quot;a&quot;, &quot;c&quot;]
+// 例子2
+/(.)b(.)/g.match('abcabc');//[&quot;abc&quot;, &quot;abc&quot;]
+</code></pre>
+<p>上述代码的两个例子仅仅相差一个<code>g</code>修饰符，<code>match</code>方法的结果却有很大差异：一个捕获了匹配整个表达式的部分和所有分组，一个捕获了匹配整个表达式的所有子串。所以这里有一点需要注意：<strong>使用组匹配时，不宜同时使用<code>g</code>修饰符，否则<code>match</code>方法不会捕获分组的内容</strong>。</p>
+<p>如果一定需要将<code>组匹配</code>和<code>g</code>修饰符结合起来使用，可以用正则对象的<code>exec</code>方法搭配循环来实现：</p>
+<pre><code class="language-javascript">var regex = /(.)b(.)/g;
+var str = 'abcabc';
+while(true) {
+    var result = regex.exec(str);
+    if(!result) break;
+    else console.log(result);
+}
+//[&quot;abc&quot;, &quot;a&quot;, &quot;c&quot;]
+//[&quot;abc&quot;, &quot;a&quot;, &quot;c&quot;]
+</code></pre>
+<p>正则表达式内部还可以用<code>\n</code>来引用组匹配的内容，<code>n</code>是从1开始的自然数，表示对应顺序的组匹配的内容：</p>
+<pre><code class="language-javascript">/(.)b(.)\1b\2/.exec('abcabc');//[&quot;abcabc&quot;, &quot;a&quot;, &quot;c&quot;]
+/(.)b(.)\2b\1/.exec('abccba')[0];//[&quot;abccba&quot;, &quot;a&quot;, &quot;c&quot;]
+</code></pre>
+<p>上述代码中，<code>\1</code>表示第一个括号匹配的内容（即<code>a</code>），<code>\2</code>表示第二个括号匹配的内容（即<code>c</code>）。</p>
+<p>括号还支持嵌套：</p>
+<pre><code class="language-javascript">/((ab)\2)\1/.exec('ababababc');//[&quot;abababab&quot;, &quot;abab&quot;, &quot;ab&quot;]
+</code></pre>
+<p>上述代码中，<code>\1</code>表示外层括号，<code>\2</code>表示内层括号。在存在组嵌套的表达式中，<code>\n</code>是类似于深度优先的方式来进行标号，如下图所示：</p>
+<pre><code class="language-javascript">/(a(b))(c)(d)\1\2\3\4/.test('abcdabbcd');
+ | |   |  |___  \4
+ | |   |______  \3
+ | |__________  \2
+ |____________  \1
+</code></pre>
+<p>组匹配非常有用，下面是一个匹配网页标签的例子：</p>
+<pre><code class="language-javascript">var result = /&lt;([^&gt;]+)&gt;[^&lt;]*&lt;\/\1&gt;/.exec(&quot;&lt;b&gt;bold&lt;/b&gt;&quot;);
+var htmlFragment = result[0];
+var tagName = result[1];
+console.log(htmlFragment);//&quot;&lt;b&gt;bold&lt;/b&gt;&quot;
+console.log(tagName);//&quot;b&quot;
+</code></pre>
+<p>上述代码中的正则表达式，应该是本文学到现在见过的最复杂的正则，我们来梳理一下：</p>
+<figure data-type="image" tabindex="1"><img src="https://xiewangmei.github.io/post-images/1602727276949.png" alt="匹配网页标签正则解析" loading="lazy"></figure>
+<p>拆解之后，我们很容易看出该表达式是用来匹配类似<code>&lt;span&gt;hillstone&lt;/span&gt;</code>这样的字符串，也就是匹配网页标签。</p>
+<p>将上述代码稍作修改，就能匹配带属性的标签：</p>
+<pre><code class="language-javascript">var result = /&lt;(\w+)([^&gt;]*)&gt;(.*?)&lt;\/\1&gt;/.exec('&lt;b class=&quot;hello&quot;&gt;Hello&lt;/b&gt;');
+console.log(result[1]);//b
+console.log(result[2]);// class=&quot;hello&quot;
+console.log(result[3]);//Hello
+</code></pre>
+<h5 id="非捕获组">非捕获组</h5>
+<p><code>(?:x)</code>称为非捕获组，表示匹配结果中不包含该组匹配的内容：</p>
+<pre><code class="language-javascript">// 正常组匹配
+'abc'.match(/(.)b(.)/);//[&quot;abc&quot;, &quot;a&quot;, &quot;c&quot;]
+// 非捕获组匹配
+'abc'.match(/(?:.)b(.)/);//[&quot;abc&quot;, &quot;c&quot;]
+</code></pre>
+<p>上述第二个例子中，第一个组采用了<code>非捕获组</code>匹配，所以最终返回的结果没有第一个括号，只有第二个括号的内容。</p>
+<p>再来看一个分解网址的正则表达式：</p>
+<pre><code class="language-javascript">// 正常匹配
+var url = /(http|ftp):\/\/([^/\r\n]+)(\/[^\r\n]*)?/;
+
+url.exec('http://google.com/');
+// [&quot;http://google.com/&quot;, &quot;http&quot;, &quot;google.com&quot;, &quot;/&quot;]
+
+// 非捕获组匹配
+var url = /(?:http|ftp):\/\/([^/\r\n]+)(\/[^\r\n]*)?/;
+
+url.exec('http://google.com/');
+// [&quot;http://google.com/&quot;, &quot;google.com&quot;, &quot;/&quot;]
+</code></pre>
+<p>上述代码中，前一个正则表达式是正常匹配，第一个括号返回网络协议；后一个正则表达式是非捕获匹配，返回结果中不包括网络协议。</p>
+<h5 id="先行断言">先行断言</h5>
+<p><code>x(?=y)</code>称为<code>先行断言</code>，意思是<code>x</code>必须在<code>y</code>之前才匹配，<code>y</code>不会被记入返回结果：</p>
+<pre><code class="language-javascript">var regex = /\d+(?=%)/;//匹配后面跟着'%'的数字
+'97%'.match(regex);//[&quot;97&quot;]
+</code></pre>
+<p>上述代码使用了<code>先行断言</code>，括号内的<code>%</code>不会作为结果返回。</p>
+<h5 id="先行否定断言">先行否定断言</h5>
+<p><code>x(?!y)</code>称为<code>先行否定断言</code>，<code>x</code>只有不在<code>y</code>之前才匹配，<code>y</code>不会被记入返回结果：</p>
+<pre><code class="language-javascript">var regex1 = /\d+(?!%)/;//匹配后面不是跟着'%'的数字
+'97%'.match(regex1);//['9']
+'97c'.match(regex1);//['97']
+
+var regex2 = /\d+(?!\.)/;//匹配后面不是跟着'.'的数字
+'3.14'.match(regex2);//['14']
+'1234'.match(regex2);//['1234']
+</code></pre>
+<p>上述代码使用了<code>先行否定断言</code>，括号内对应的<code>%</code>、<code>.</code>等都不会作为结果返回。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://xiewangmei.github.io/tag/xyqiu/" class="tag">
+                    xyqiu
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://xiewangmei.github.io/post/3d-earth/">
+                  <h3 class="post-title">
+                    如何绘制一个带飞线动效的旋转3D地球
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>日积月累 | Blog-wmxie</title>
+<title>学会写正则 | Blog-wmxie</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
@@ -18,12 +18,9 @@
 
 
 
-    <meta name="description" content="
-
-接口请求Status(blocked:other)，出现这种情况是被浏览器插件（如AdBlock插件）当广告拦截了
-
-
-jquery 解决favicon.ico 404找不到的问题，可以在html头部添加&lt;link rel=&qu..." />
+    <meta name="description" content="1.正则表达式/\d{3}-\d{8}|\d{4}-\d{7,8}/代表什么含义：
+首先观察到表达式中有一个选择符|，而选择符的两边没有圆括号成对出现，那么可以推断出该表达式是匹配\d{3}-\d{8}或\d{4}-\{7,8}两种模式。
+..." />
     <meta name="keywords" content="" />
   </head>
   <body>
@@ -95,50 +92,35 @@ jquery 解决favicon.ico 404找不到的问题，可以在html头部添加&lt;li
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">日积月累</h2>
-            <div class="post-date">2020-09-29</div>
+            <h2 class="post-title">学会写正则</h2>
+            <div class="post-date">2020-10-15</div>
             
             <div class="post-content" v-pre>
-              <ol>
-<li>
-<p>接口请求Status(blocked:other)，出现这种情况是被浏览器插件（如AdBlock插件）当广告拦截了</p>
-</li>
-<li>
-<p>jquery 解决favicon.ico 404找不到的问题，可以在html头部添加&lt;link <em>rel</em>=&quot;shortcut icon&quot; <em>href</em>=&quot;#&quot;/&gt;</p>
-</li>
-<li>
-<p>for..of ES6提供可以直接遍历值而不是数组下标</p>
-<pre><code class="language-javascript">var myArray = [1,2,3];
-for(var v of myArray){
-    console.log(v);
-}
-//1
-//2
-//3
-</code></pre>
-<p>for..of循环首先会向被访问对象请求一个迭代器对象，然后通过调用迭代器对象的next()方法来遍历所有返回值</p>
-</li>
-<li>
-<p>K8s kubelet &amp; kubeadm &amp; kubectl 介绍</p>
-<ul>
-<li>kubelet: 运行在cluster所有节点上，负责启动POD和容器</li>
-<li>kubeadm: 用于初始化cluster</li>
-<li>kubectl: kubenetes命令行工作，通过kubectl可以部署和管理应用，查看各种资源，创建，删除和更新组件</li>
-</ul>
-</li>
-<li>
-<p>npx create-react-app 报网络错误时，可以尝试将之前安装的npm create-react-app删掉（<code>npm uninstall -g create-react-app</code>），同时修改registry为淘宝镜像</p>
-</li>
-</ol>
+              <p>1.正则表达式<code>/\d{3}-\d{8}|\d{4}-\d{7,8}/</code>代表什么含义：</p>
+<p>首先观察到表达式中有一个选择符<code>|</code>，而选择符的两边没有圆括号成对出现，那么可以推断出该表达式是匹配<code>\d{3}-\d{8}</code>或<code>\d{4}-\{7,8}</code>两种模式。</p>
+<p>模式<code>\d{3}-\d{8}</code>：三位数字和八位数字，中间以<code>-</code>连接，例：010-88888888</p>
+<p>模式<code>\d{4}-\d{7,8}</code>：四位数字和七(八)位数字，中间以<code>-</code>连接，例：0512-88888888</p>
+<p>到现在应该可以看出，这个正则是匹配座机号码。</p>
+<p>但是，中国的座机号是按一定的规律组成，上面的表达式不完全正确。例如：000-00000000 明显不是一个合法的座机号。<strong>思考如何改进</strong>？</p>
+<p>2.正则表达式<code>/(?=.{8,31})(?=.*\d.*\d.*)(?=.*[a-z].*[a-z].*)(?=.*[A-Z].*[A-Z].*)(?=.*[^a-zA-Z0-9].*[^a-zA-Z0-9].*)/</code>代表什么含义（拷贝自智源项目）：</p>
+<p>观察正则表达式的结构，发现其是由五个<code>先行断言</code>组成。<code>(?=正则)</code>表示在这个位置之后的字符串必须符合<code>?=</code>之后的正则。而我们知道先行断言有一个特点：不消耗字符串。那么也就是说在这之后的正则还是从同一位置开始匹配。</p>
+<p><code>(?=.{8,31})</code>：字符串长度为 8-31</p>
+<p><code>(?=.*\d.*\d.*)</code>：必须包含两个数字</p>
+<p><code>(?=.*[a-z].*[a-z].*)</code>：必须包含两个小写字母</p>
+<p><code>(?=.*[A-Z].*[A-Z].*)</code>：必须包含两个大写字母</p>
+<p><code>(?=.*[^a-zA-Z0-9].*[^a-zA-Z0-9].*)</code>必须包含两个特殊字符</p>
+<p>显而易见，这是用来校验密码强度的正则。</p>
+<p><strong>小结：</strong></p>
+<p>我们拿到一个正则表达式，不管它有多复杂，千万不要被吓到，需要一步步地将其分解为多个子表达式，然后分析每个子表达式匹配的是何种模式，必要时尝试着举几个例子来验证自己的想法是否正确，最终纵观整体一般都能理解正则表达式的含义。</p>
 
             </div>
             
             
               <div class="next-post">
                 <div class="next">下一篇</div>
-                <a href="https://xiewangmei.github.io/post/vscode/">
+                <a href="https://xiewangmei.github.io/post/regexp/">
                   <h3 class="post-title">
-                    VSCode常用快捷键
+                    RegExp 对象
                   </h3>
                 </a>
               </div>
