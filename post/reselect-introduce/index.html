@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Reselect 简介 | Blog-wmxie</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://xiewangmei.github.io/favicon.ico?v=1602728059622">
+<link rel="stylesheet" href="https://xiewangmei.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="前言
+我们平时在使用react-redux时，用到最多的函数大概就是mapStateToProps和mapDispatchToProps。其中，
+mapStateToProps函数允许我们将 store 中的数据作为 props 绑定到组件..." />
+    <meta name="keywords" content="xyqiu" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://xiewangmei.github.io">
+        <img src="https://xiewangmei.github.io/images/avatar.png?v=1602728059622" class="site-logo">
+        <h1 class="site-title">Blog-wmxie</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="https://xiewangmei.github.io/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      念念不忘，必有回响~
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://xiewangmei.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Reselect 简介</h2>
+            <div class="post-date">2020-10-15</div>
+            
+            <div class="post-content" v-pre>
+              <h2 id="前言">前言</h2>
+<p>我们平时在使用<code>react-redux</code>时，用到最多的函数大概就是<code>mapStateToProps</code>和<code>mapDispatchToProps</code>。其中，</p>
+<p><code>mapStateToProps</code>函数允许我们将 <code>store</code> 中的数据作为 <code>props</code> 绑定到组件上，它的第一个参数就是 Redux 的整个状态树(state)：</p>
+<pre><code class="language-jsx">const Counter = props =&gt; &lt;div&gt;Count: {props.count}&lt;/div&gt;;
+const mapStateToProps = state =&gt; ({ count: state.count });
+export default connect(mapStateToProps)(Counter);
+</code></pre>
+<p>上述代码里，我们从<code>state</code>中摘取了 <code>count</code> 属性。因为返回了具有 <code>count</code> 属性的对象，所以 <code>Counter</code>组件的<code>props</code>中会有一个 <code>count</code>字段。</p>
+<p>一切看起来很完美。但是仔细想一下，每次状态树更新之后，redux 都会调用一次<code>mapStateToProps</code>，当我们的应用足够大，组件众多时，这里面的大量冗余计算就值得重视了。</p>
+<p><strong>这个时候就需要 Reselect 出马了</strong></p>
+<h2 id="正文">正文</h2>
+<p>我们先看一个小栗子：</p>
+<p>假设我们有一组复选框，用来罗列各个商品的名称和价钱，底部用来展示我们选择商品的总价，我们用 redux 实现：</p>
+<pre><code class="language-javascript">const getItems = state =&gt; state.items;
+
+const getTotal1 = createSelector(
+  getItems,
+  items =&gt; {
+    console.log(&quot;total-with-reselect 将要计算&quot;);
+    return items.reduce(
+      (acc, item) =&gt; acc + (item.checked ? item.price : 0),
+      0
+    );
+  }
+);
+
+const getTotal2 = state =&gt; {
+  console.log(&quot;total-without-reselect 将要计算&quot;);
+  return state.items.reduce(
+    (acc, item) =&gt; acc + (item.checked ? item.price : 0),
+    0
+  );
+};
+
+const mapStateToProps = state =&gt; ({
+  total1: getTotal1(state),
+  total2: getTotal2(state)
+});
+</code></pre>
+<p>我们通过<code>createSelector</code>创建了一个记忆选择器<code>getTotal1</code>，另外创建了一个不带缓存的求和函数<code>getTotal2</code>。另外，我们在页面中加一个 input 输入框，并且将其值绑定到 redux 的 state 中，用作干扰项。</p>
+<p>结果如下：</p>
+<figure data-type="image" tabindex="1"><img src="https://xiewangmei.github.io/post-images/1602727927376.gif" alt="实验结果" loading="lazy"></figure>
+<p><strong>对比发现，从 state 中取值的方式有一些细微改变</strong>：<code>getTotal1</code>是通过<code>getItems</code>提取 state 中的源数据，然后再通过一个包装后的函数计算总和；<code>getTotal2</code>则是直接从 state 中拿值并计算总和。</p>
+<p>前者的好处是：<code>getItems</code>返回值不变时，计算函数不会重新执行。也就是说，当 state 中的<code>items</code>没有变化时，reselect 会直接返回上一次计算缓存的结果，避免多余的重复计算。</p>
+<p>那么<code>reselect</code>是如何实现这一机制的呢？看一下源码：</p>
+<pre><code class="language-javascript">/**
+ * 默认的比较函数
+ * @param {*} a 待比较项
+ * @param {*} b 待比较项
+ */
+function defaultEqualityCheck(a, b) {
+  return a === b;
+}
+
+/**
+ * 参数是否浅等
+ * @param {Function} equalityCheck 比较函数
+ * @param {Object} prev 前一次参数
+ * @param {Object} next 后一次参数
+ */
+function areArgumentsShallowlyEqual(equalityCheck, prev, next) {
+  if (prev === null || next === null || prev.length !== next.length) {
+    return false;
+  }
+
+  // Do this in a for loop (and not a `forEach` or an `every`) so we can determine equality as fast as possible.
+  const length = prev.length;
+  for (let i = 0; i &lt; length; i++) {
+    if (!equalityCheck(prev[i], next[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * 默认的记忆函数(核心)
+ * @param {Function} func 计算结果函数
+ * @param {Function} equalityCheck 比较函数
+ */
+export function defaultMemoize(func, equalityCheck = defaultEqualityCheck) {
+  // 缓存上次的参数
+  let lastArgs = null;
+  // 缓存上次的结果
+  let lastResult = null;
+  // we reference arguments instead of spreading them for performance reasons
+  return function() {
+    if (!areArgumentsShallowlyEqual(equalityCheck, lastArgs, arguments)) {
+      // apply arguments instead of spreading for performance.
+      lastResult = func.apply(null, arguments);
+    }
+
+    lastArgs = arguments;
+    return lastResult;
+  };
+}
+
+/**
+ * 获取input-selectors数组
+ * @param {Array} funcs input-selectors数组
+ */
+function getDependencies(funcs) {
+  // input-selectors数组可以有两种形式:
+  // 1.[input-selector1, input-selector2...]
+  // 2.[[input-selector1, input-selector2...]]
+  const dependencies = Array.isArray(funcs[0]) ? funcs[0] : funcs;
+
+  if (!dependencies.every(dep =&gt; typeof dep === &quot;function&quot;)) {
+    const dependencyTypes = dependencies.map(dep =&gt; typeof dep).join(&quot;, &quot;);
+    throw new Error(
+      &quot;Selector creators expect all input-selectors to be functions, &quot; +
+        `instead received the following types: [${dependencyTypes}]`
+    );
+  }
+
+  return dependencies;
+}
+
+/**
+ * 选择器创建器创建方法
+ * @param {Function} memoize 记忆函数
+ * @param  {...any} memoizeOptions 记忆函数参数(可不传)
+ */
+export function createSelectorCreator(memoize, ...memoizeOptions) {
+  // funcs: 创建选择器传入的input-selectors和resultFunc
+  return (...funcs) =&gt; {
+    let recomputations = 0;
+    const resultFunc = funcs.pop();
+    const dependencies = getDependencies(funcs);
+
+    // 真正的记忆函数
+    // createSelector方法中,memoize就是defaultMemoize
+    const memoizedResultFunc = memoize(function() {
+      recomputations++;
+      // apply arguments instead of spreading for performance.
+      // 这里arguments是各个依赖项(input-selector)执行结果的数组(下文的params)
+      return resultFunc.apply(null, arguments);
+    }, ...memoizeOptions);
+
+    // 内部二次优化: 使用完全相同的参数(state)调用选择器，则不需要再次遍历依赖项(input-selectors)
+    // 因为reducer是不一定会返回一个新的state，所以state没变的时候，真正的记忆函数就不用被调用。
+    const selector = memoize(function() {
+      const params = [];
+      const length = dependencies.length;
+
+      for (let i = 0; i &lt; length; i++) {
+        // apply arguments instead of spreading and mutate a local list of params for performance.
+        // 这里arguments是state
+        // 根据传入的state计算每个input-selector结果, 并将结果push到params数组中
+        params.push(dependencies[i].apply(null, arguments));
+      }
+
+      // apply arguments instead of spreading for performance.
+      // 调用真正的记忆函数, 并返回结果
+      return memoizedResultFunc.apply(null, params);
+    });
+
+    selector.resultFunc = resultFunc;
+    selector.dependencies = dependencies;
+    selector.recomputations = () =&gt; recomputations;
+    selector.resetRecomputations = () =&gt; (recomputations = 0);
+    return selector;
+  };
+}
+
+// 默认的选择器创建方法
+export const createSelector = createSelectorCreator(defaultMemoize);
+
+export function createStructuredSelector(
+  selectors,
+  selectorCreator = createSelector
+) {
+  if (typeof selectors !== &quot;object&quot;) {
+    throw new Error(
+      &quot;createStructuredSelector expects first argument to be an object &quot; +
+        `where each property is a selector, instead received a ${typeof selectors}`
+    );
+  }
+  const objectKeys = Object.keys(selectors);
+  return selectorCreator(objectKeys.map(key =&gt; selectors[key]), (...values) =&gt; {
+    return values.reduce((composition, value, index) =&gt; {
+      composition[objectKeys[index]] = value;
+      return composition;
+    }, {});
+  });
+}
+</code></pre>
+<p>阅读完源码发现，这个库的代码量很小，主要就是采用了闭包 + 高阶函数来实现，核心方法其实就是<code>defaultMemoize</code>。</p>
+<h2 id="思考">思考</h2>
+<p>由于 Reselect 缓存结果这一特性，我们可以将其延伸一下，不一定非要结合 redux 使用。</p>
+<p>例如，给定一组坐标数据绘制图表：</p>
+<pre><code class="language-javascript">const data = [
+  { x: 1, y: 3 },
+  { x: 2, y: 7 },
+  { x: 3, y: 2 },
+  { x: 4, y: 9 },
+  { x: 5, y: 3 }
+];
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://xiewangmei.github.io/post-images/1602727891483.png" alt="绘图" loading="lazy"></figure>
+<h3 id="普通写法"><code>普通写法</code></h3>
+<pre><code class="language-javascript">// 假定有一个画图API:DrawAPI
+const drawFn = DrawAPI.draw;
+</code></pre>
+<p>普通写法，每次后台来了新数据时，无论具体的值是否发生变化都重新绘制，势必会造成不必要的性能浪费。</p>
+<h3 id="进阶写法"><code>进阶写法</code></h3>
+<pre><code class="language-javascript">import { defaultMemoize } from &quot;reselect&quot;;
+
+const checkEqualFn = (oldData, newData) =&gt; {
+  if (oldData.length !== newData.length) {
+    return false;
+  } else {
+    const length = oldData.length;
+    for (let i = 0; i &lt; length; i++) {
+      const { x: xOld, y: yOld } = oldData[i];
+      const { x: xNew, y: yNew } = newData[i];
+      if (xOld !== xNew || yOld !== yNew) {
+        return false;
+      }
+    }
+    return true;
+  }
+};
+
+const drawFn = defaultMomize(DrawAPI.draw, checkEqualFn);
+</code></pre>
+<p>进阶写法，只有当后台给的数据发生变化时，才重新绘制。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://xiewangmei.github.io/tag/xyqiu/" class="tag">
+                    xyqiu
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://xiewangmei.github.io/post/reselect-middleware/">
+                  <h3 class="post-title">
+                    Reselect库介绍
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

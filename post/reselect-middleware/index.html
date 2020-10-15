@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Reselect库介绍 | Blog-wmxie</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://xiewangmei.github.io/favicon.ico?v=1602728059622">
+<link rel="stylesheet" href="https://xiewangmei.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="Reselect是redux官方社区的一个选择器库，它有以下几个特点：
+
+选择器可以计算派生数据，允许store存储最小化的state。
+选择器是高效的，只有参数变了它才会去重新计算。
+选择器支持组合，可以当做其他选择器的输入。
+
+下面是一..." />
+    <meta name="keywords" content="xyqiu" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://xiewangmei.github.io">
+        <img src="https://xiewangmei.github.io/images/avatar.png?v=1602728059622" class="site-logo">
+        <h1 class="site-title">Blog-wmxie</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="https://xiewangmei.github.io/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      念念不忘，必有回响~
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://xiewangmei.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Reselect库介绍</h2>
+            <div class="post-date">2020-10-15</div>
+            
+            <div class="post-content" v-pre>
+              <p><code>Reselect</code>是redux官方社区的一个选择器库，它有以下几个特点：</p>
+<ul>
+<li>选择器可以计算派生数据，允许store存储最小化的state。</li>
+<li>选择器是高效的，只有参数变了它才会去重新计算。</li>
+<li>选择器支持组合，可以当做其他选择器的输入。</li>
+</ul>
+<p>下面是一个<code>reselect</code>库的实例：</p>
+<pre><code class="language-jsx">import { createSelector } from 'reselect';
+
+const shopItemSelector = state =&gt; state.shop.items;
+const taxPercentSelector = state =&gt; state.shop.taxPercent;
+
+const subTotalSelector = createSelector(
+    shopItemSelector,
+    items =&gt; items.reduce((acc, item) =&gt; acc + item.value, 0)
+);
+
+const taxSelector = createSelector(
+    subtotalSelector,
+    taxPercentSelector,
+    (subtotal, tax) =&gt; subtotal * (taxPercent / 100)
+);
+
+export const totalSelector = createSelector(
+    subtotalSelector,
+    taxSelector,
+    (subtotal, tax) =&gt; ({ total: subtotal + tax })
+);
+
+const exampleState = {
+    shop: {
+        taxPercent: 8,
+        items: [
+            { name: 'apple', value: 1.20 },
+            { name: 'orange', value: 0.95 }
+        ]
+    }
+};
+
+console.log(subTotalSelector(exampleState));//2.15
+console.log(taxSelector(exampleState));//0.172
+console.log(totalSelector(exampleState));//{ total: 2.322 }
+</code></pre>
+<h2 id="为什么需要选择器">为什么需要选择器</h2>
+<p>本节的例子是基于redux官方文档的TodoList应用进行修改：</p>
+<h4 id="containersvisibletodolistjs"><code>containers/VisibleTodoList.js</code></h4>
+<pre><code class="language-jsx">import { connect } from 'react-redux';
+import { toggleTodo } from '../actions';
+import TodoList from '../components/TodoList';
+
+const getVisibleTodos = (todos, filter) =&gt; {
+    switch (filter) {
+        case &quot;SHOW_ALL&quot;:
+            return todos;
+        case &quot;SHOW_COMPLETED&quot;:
+            return todos.filter(t =&gt; t.completed);
+        case &quot;SHOW_ACTIVE&quot;:
+            return todos.filter(t =&gt; !t.completed);
+    }
+};
+
+const mapStateToProps = state =&gt; {
+    return {
+        todos: getVisibleTodos(state.todos, state.visiblityFilter)
+    };
+}
+
+const mapDispatchToProps = dispatch =&gt; {
+    return {
+        onTodoClick: id =&gt; dispatch(toggleTodo(id))
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(TodoList);
+</code></pre>
+<p>在上面的例子中，<code>mapStateToProps</code>调用<code>getVisibleTodos</code>来计算<code>todos</code>。这种做法的确奏效，不过有个弊端：每次state树更新之后<code>todos</code>都要重新计算，如果状态树很大或者计算开销很大，这种模式就会带来性能问题。<code>Resekect</code>库可以避免这些不必要的重复计算。</p>
+<h3 id="创建一个记忆选择器">创建一个记忆选择器</h3>
+<p>我们将用一个<code>记忆选择器</code>替换<code>getVisibleTodos</code>方法，该选择器在<code>state.todos</code>或者<code>state.visibilityFilter</code>值更改时重新计算<code>todos</code>，但在状态树的其它不相关部分发生更改时不重新计算<code>todos</code>。</p>
+<p><code>Reselect</code>提供了一个<code>createSelector()</code>方法用来创建<code>记忆选择器</code>。<code>createSelector()</code>接收一个<strong>输入选择器数组</strong>和一个<strong>转换函数</strong>作为参数。如果状态树的变化导致某个输入选择器的值发生变化，选择器将使用输入选择器的值作为参数来调用其转换函数，并返回结果。如果输入选择器的值与上一次调用相同，则选择器会返回上一次计算的值，而不是调用转换函数。</p>
+<p>现在我们来定义一个名为<code>getVisibleTodos</code>的记忆选择器来替换上面的非记忆版本：</p>
+<h4 id="selectorsindexjs"><code>selectors/index.js</code></h4>
+<pre><code class="language-javascript">import { createSelector } from 'reselect';
+
+const getVisibilityFilter = state =&gt; state.visibilityFilter;
+const getTodos = state =&gt; state.todos;
+
+export const getVisibleTodos = createSelector(
+    [getVisibilityFilter, getTodos],
+    (visibilityFilter, todos) =&gt; {
+        switch (visibilityFilter) {
+            case 'SHOW_ALL':
+                return todos;
+            case 'SHOW_COMPLETED':
+                return todos.filter(t =&gt; t.completed);
+            case 'SHOW_ACTIVE':
+                return todos.filter(t =&gt; !t.completed);
+        }
+    }
+);
+</code></pre>
+<p>在上面的例子中，<code>getVisibilityFilter</code>和<code>getTodos</code>都是输入选择器。它们被创建为普通的非记忆选择器，因为他们不对所选数据进行转换。而<code>getVisibleTodos</code>就是一个记忆选择器，它以<code>getVisibilityFilter</code>和<code>getTodos</code>为输入选择器，并且接收一个转换函数用来计算过滤后的待办事项列表。</p>
+<h3 id="选择器组合">选择器组合</h3>
+<p>记忆选择器本身可以是另一个记忆选择器的输入选择器，像下面例子中的<code>getVisibleTodos</code>就是另一个选择器(该选择器通过关键字进一步过滤todos)的输入选择器：</p>
+<pre><code class="language-javascript">const getKeyword = state =&gt; state.keyword;
+const getVisibleTodosFilteredByKeyword = createSelector(
+  [getVisibleTodos, getKeyword],
+  (visibleTodos, keyword) =&gt; visibleTodos.filter(todos =&gt; todo.text.includes(keyword))
+);
+</code></pre>
+<h3 id="连接选择器到redux-store">连接选择器到Redux Store</h3>
+<p>如果开发人员用了React Redux的话，可以在<code>mapStateToProps</code>中像普通函数一样调用selectors：</p>
+<h4 id="containersvisibletodolistjs-2"><code>containers/VisibleTodoList.js</code></h4>
+<pre><code class="language-javascript">import { connect } from 'react-redux';
+import { toggleTodo } from '../actions';
+import TodoList from '../components/TodoList';
+import { getVisibleTodos } from '../selectors';
+
+const mapStateToProps = state =&gt; ({ todos: getVisibleTodos(state) });
+const mapDispatchToProps = dispatch =&gt; ({ onTodoClick: id =&gt; dispatch(toggleTodo(id)) });
+const VisibleTodoList = connect(mapStateToProps, mapDispatchToProps)(TodoList);
+
+export default VisibleTodoList;
+</code></pre>
+<h3 id="在选择器中访问props">在选择器中访问props</h3>
+<p>到目前为止，我们只见过选择器接收state为参数，但是它也可以接收props。</p>
+<p>下面的例子里<code>App</code>组件中渲染了三个<code>VisibleTodoList</code>组件，每个都包含一个<code>listId</code>属性：</p>
+<h4 id="componentsappjs"><code>components/App.js</code></h4>
+<pre><code class="language-jsx">import React from 'react';
+import Footer from './Footer';
+import AddTodo from '../containers/AddTodo';
+import VisibleTodoList from '../containers/VisibleTodoList';
+
+const App = () =&gt; (
+  &lt;div&gt;
+    &lt;VisibleTodoList listId='1' /&gt;
+    &lt;VisibleTodoList listId='2' /&gt;
+    &lt;VisibleTodoList listId='3' /&gt;
+  &lt;/div&gt;
+)
+</code></pre>
+<p>每个<code>VisibleTodoList</code>容器应该根据不同的<code>listId</code>属性来选择不同的状态切片，所以我们来改下<code>getVisibilityFilter</code>和<code>getTodos</code>让它们接收props参数：</p>
+<h4 id="selectorstodoselectorsjs">selectors/todoSelectors.js</h4>
+<pre><code class="language-javascript">import { createSelector } from 'reselect';
+
+const getVisibilityFilter =  (state, props) =&gt; {
+    return state.todoLists[props.listId].VisibilityFilter;
+};
+const getTodos = (state, props) =&gt; {
+    return state.todoLists[props.listId].todos;
+};
+const getVisibilityTodos = createSelector(
+    [ getVisibilityFilter, getTodos ],
+    (visibilityFilter, todos) =&gt; {
+        switch (visibilityFilter) {
+            case 'SHOW_COMPLETED':
+                return todos.filter(todo =&gt; todo.completed);
+            case 'SHOW_ACTIVE':
+                return todos.filter(todo =&gt; !todo.completed);
+            default:
+                return todos;
+        }
+    }
+);
+
+export defaults getVisibleTodos;
+</code></pre>
+<p><code>props</code>可以从<code>mapStateToProps</code>中传给<code>getVisibleTodos</code>：</p>
+<pre><code class="language-javascript">const mapStateToProps = (state, props) =&gt; ({ todos: getVisibleTodos(state, props)});
+</code></pre>
+<p>所以现在<code>getVisibleTodos</code>访问到<code>props</code>，而且一切看似很OK。</p>
+<p><strong>但是有一个问题！</strong></p>
+<p>将<code>getVisibleTodos</code>选择器和多个<code>VisibleTodoList</code>容器实例一起使用时将不会正确记忆：</p>
+<h4 id="containersvisibletodolistjs-3"><code>containers/VisibleTodoList.js</code></h4>
+<pre><code class="language-javascript">import { connect } from 'react-redux';
+import { toggleTodo } from '../actions';
+import TodoList from '../components/TodoList';
+import { getVisibleTodos } from '../selectors';
+
+const mapStateToProps = (state, props) =&gt; {
+    return {
+        // WARNING: THE FOLLOWING SELECTOR DOES NOT CORRECTLY MEMOIZE
+        todos: getVisibleTodos(state,props)
+    }
+};
+const maoDispatchToProps = dispatch =&gt; {
+    return {
+        onTodoClick: id =&gt; dispatch(toggleTodo(id));
+    };
+};
+const VisibleTodoList = connect(mapStateToProps, mapDispatchToProps)(TodoList);
+
+export default VisibleTodoList;
+</code></pre>
+<p>使用<code>createSelector</code>创建的选择器的缓存大小为1，并且只有当其参数集与前一组参数集相同时才返回缓存的值。如果我们来回交替渲染<code>&lt;VisibleTodoList listId='1' /&gt;</code>和<code>&lt;VisibleTodoList listId='2 /&gt;'</code>，那么共享选择器会交替接收<code>listId:1</code>和<code>listId:2</code>作为其props参数。这将会导致每次调用都是不同的参数，所以选择器将总是重新计算而不是返回缓存值。在下一节中我们将了解如何克服这一限制。</p>
+<h3 id="跨多个组件实例共享带props的选择器">跨多个组件实例共享带props的选择器</h3>
+<p>要在多个<code>VisibleTodoList</code>实例之间共享选择器，同时传入props并保留缓存，组件的每个实例都需要一份私有的选择器副本。</p>
+<p>让我们创建一个名为<code>makeGetVisibleTodos</code>的函数，该函数每次调用时都返回<code>getVisibleTodos</code>选择器的新副本：</p>
+<h4 id="selectorstodoselectorsjs-2"><code>selectors/todoSelectors.js</code></h4>
+<pre><code class="language-javascript">import { createSelector } from 'reselect';
+
+const getVisibilityFilter =  (state, props) =&gt; {
+    return state.todoLists[props.listId].VisibilityFilter;
+};
+const getTodos = (state, props) =&gt; {
+    return state.todoLists[props.listId].todos;
+};
+const makeGetVisibleTodos = () =&gt; {
+    return createSelector(
+        [ getVisibilityFilter, getTodos],
+        (visibilityFilter, todos) =&gt; {
+            switch (visibilityFilter) {
+                case 'SHOW_COMPLETED':
+                    return todos.filter(todo =&gt; todo.completed);
+                case 'SHOW_ACTIVE':
+                    return todos.filter(todo =&gt; !todo.completed);
+                default:
+                    return todos;
+            }
+        }
+    );
+};
+
+export default makeGetVisibleTodos;
+</code></pre>
+<p>我们还需要一种方法，让容器的每个实例都可以访问它自己的私有选择器。<code>connect</code>方法的<code>mapStateToProps</code>参数可以起作用。</p>
+<p><strong>如果传给<code>connect</code>的<code>mapStateToProps</code>参数返回一个函数而不是一个对象，它将用于给容器的每个实例创建一个单独的<code>mapStateToProps</code>函数。</strong></p>
+<p>下面的例子中，<code>makeMapStateToProps</code>创建一个新的<code>getVisibleTodos</code>选择器，并且返回一个对新选择器具有独占访问权的<code>mapStateToProps</code>函数：</p>
+<pre><code class="language-javascript">const makeMapStateToProps = () =&gt; {
+    const getVisibleTodos = makeGetVisibleTodos();
+    const mapStateToProps = (state, props) =&gt; ({ todos: getVisibleTodos(state, props) });
+    // 这里返回mapStateToProps函数
+    return mapStateToProps;
+}
+</code></pre>
+<p>如果我们将<code>makeMapStateToProps</code>给<code>connect</code>方法，每一个<code>VisibleTodoList</code>容器实例都会得到一个包含私有的<code>getVisibleTodos</code>选择器的<code>mapStateToProps</code>方法。现在无论<code>VisibleTodosList</code>容器的渲染顺序如何，缓存机制都可以正确运作。</p>
+<h4 id="containersvisibletodolistjs-4"><code>containers/VisibleTodoList.js</code></h4>
+<pre><code class="language-javascript">import { connect } from 'react-redux';
+import { toggleTodo } from '../actions';
+import TodoList from '../components/TodoList';
+import { makeGetVisibleTodos } from '../selectors';
+
+const makeMapStateToProps = () =&gt; {
+    const getVisibkeTodos = makeGetVisibleTodos();
+    const mapStateToProps = (state, props) =&gt; ({ todos: getVisibleTodos(state, props) });
+    return mapStateToProps;
+};
+
+const mapDispatchToProps = dispatch =&gt; ({ onTodoClick: id =&gt; dispatch(toggleTodo(id)) });
+
+const VisibleTodoList = connect(makeMapStateToProps, mapDispatchToProps)(TodoList);
+
+export default VisibleTodoList;
+</code></pre>
+<h2 id="api">API</h2>
+<h3 id="createselectorinputselectors-inputselectors-resultfunc">createSelector(...inputSelectors | [inputSelectors], resultFunc)</h3>
+<p>接收一个/多个选择器，或者一个选择器数组，计算它们的值并将其作为参数传递给<code>resultFunc</code>。</p>
+<p><code>createSelector</code>采用引用相等<code>===</code>来确定输入选择器的值在多次调用之间是否发生了更改。</p>
+<p>由<code>createSelector</code>创建的选择器缓存大小为1。这意味着当<code>输入选择器</code>的值发生更改的时候，他们总是重新计算，因为选择器只会存储每个<code>输入选择器</code>的前一个值。</p>
+<pre><code class="language-javascript">const mySelector = creatSelector(
+    state =&gt; state.values.value1,
+    state =&gt; state.values.value2,
+    (value1, value2) =&gt; value1 + value2
+);
+
+// 也可以传一个selector数组
+const totalSelector = createSelector(
+    [
+        state =&gt; state.values.value1,
+        state =&gt; state.values.value2
+    ],
+    (value1, value2) =&gt; value1 + value2
+);
+</code></pre>
+<p>从选择器中访问组件的props可能很有用。当一个选择器通过<code>connect</code>连接到组件时，组件的props就会作为第二个参数传给selector：</p>
+<pre><code class="language-javascript">const abSelector = (state, props) =&gt; state.a * props.b;
+
+// 只有props(忽略state参数)
+const cSelector = (_, props) =&gt; props.c;
+
+// 只有state(props参数被省略，因为不需要)
+const dSelector = state =&gt; satte.d;
+
+const totalSelector = createSelector(
+    abSelector,
+    cSelector,
+    dSelector,
+    (ab, c, d) =&gt; ({ total: ab + c + d })
+);
+</code></pre>
+<h3 id="defaultmemoizefunc-equalitycheck-defaultequalitycheck">defaultMemoize(func, equalityCheck = defaultEqualityCheck)</h3>
+<p><code>defaultMemoize</code> 会记住传进来的<code>func</code>参数。它是<code>createSelector</code>使用的记忆函数。</p>
+<p><code>defaultMemoize</code>的缓存大小为1。这意味着当参数值改变时它总是会重新计算。</p>
+<p><code>defaultMemoize</code>通过调用<code>equalityCheck</code>函数来确定一个参数是否发生变化。由于<code>defaultMemoize</code>方法被设计成配合不可变数据使用，所以默认的<code>equalityCheck</code>函数通过引用相等来检查变更：</p>
+<pre><code class="language-javascript">function defaultEqualityCheck(currentVal, previousVal) {
+    return currentVal === previousVal;
+}
+</code></pre>
+<p><code>defaultMemoize</code>可以配合<code>createSelectorCreator</code>使用来自定义<code>equalityCheck</code>函数。</p>
+<h3 id="createselectorcreatormemoize-memoizeoptions">createSelectorCreator(memoize, ...memoizeOptions)</h3>
+<p><code>createSelectorCreator</code>可以用来创建自定义的<code>createSelector</code>。</p>
+<p>参数<code>memoize</code>是一个记忆函数，用来替代默认的<code>defaultMemoize</code>。</p>
+<p>剩下的<code>...memoizeOptions</code>参数是一个或多个传给<code>memoizeFunc</code>函数的配置项。选择器的<code>resultFunc</code>作为第一个参数传给<code>memoize</code>，<code>memoizeOptions</code>作为第二个参数，第三个参数...依次传入：</p>
+<pre><code class="language-javascript">const customSelectorCreator = createSelectorCreator(
+    customMemoize, // 用来记忆'resultFunc'的函数
+    option1, // option1作为customMemoize的第二个参数
+    option2, // option2作为customMemoize的第三个参数
+    option3, // option3作为customMemoize的第四个参数
+);
+
+const customSelector =customSelectorCreator(
+    input1,
+    input2,
+    resultFunc // 'resultFunc'作为customMemoize第一个参数
+):
+</code></pre>
+<p><code>customSelector</code>在内部像下面这样调用记忆函数：</p>
+<pre><code class="language-javascript">customMemoize(resultFunc, option1, option2, option3);
+
+</code></pre>
+<p>下面是一些<code>createSelectorCreator</code>可能的使用场景示例：</p>
+<h4 id="定制defaultmemoize的equalitycheck-方法">定制<code>defaultMemoize</code>的<code>equalityCheck</code> 方法</h4>
+<pre><code class="language-javascript">import { createSelectorCreator, defaultMemoize } from 'reselect';
+import isEqual from 'lodash.isEqual';
+
+// 创建一个&quot;选择器创建器&quot;，用&quot;lodash.isEqual&quot;来代替&quot;===&quot;&quot;
+const createDeepEqualSelector = createSelectorCreator(defaultMemoize, isEqual);
+
+// 用新的&quot;选择器创建器&quot;来创建一个选择器
+const mySelector = createDeepEqualSelector(
+    state =&gt; state.values.filter(val =&gt; val &lt; 5 ),
+    values =&gt; values.reduce((acc, val) =&gt; acc + val, 0)
+);
+
+</code></pre>
+<h4 id="对无限缓存使用lodash的memoize函数">对无限缓存使用lodash的<code>memoize</code>函数</h4>
+<pre><code class="language-javascript">import { createSelectorCreator } from 'reselect';
+import memoize from 'lodash.meomize';
+
+let called = 0;
+const hashFn = (...arg) =&gt; args.reduce(
+    (acc, val) =&gt; acc + '-' + JSON.stringify(val),
+    ''
+);
+
+const customSelectorCreator = createSelectorCreator(memoize, hashFn);
+const selector = customSelectorCreator(
+    state =&gt; state.a,
+    state =&gt; state.b,
+    (a, b) =&gt; {
+        called++;
+        return a + b;
+    }
+);
+
+</code></pre>
+<h3 id="createstructuredselectorinputselectors-selectorcreator-createselector">createStructuredSelector({inputSelectors}, selectorCreator = createSelector)</h3>
+<p><code>createStructuredSelector</code>是使用<code>reselect</code>库是出现的通用模式的方便函数。传递给<code>connect</code>装饰器的选择器通常只获取其输入选择器的值，并将其映射到对象中的键：</p>
+<pre><code class="language-javascript">const mySelectorA = state =&gt; state.a;
+const mySelectorB = state =&gt; state.b;
+
+// 下方选择器中的结果函数只是简单地根据输入选择器构造一个对象
+const structuredSelector = createSelector(
+    mySelectorA,
+    mySelectorB,
+    (a, b) =&gt; ({a, b})
+);
+
+</code></pre>
+<p><code>createStructuredSelector</code>接收一个对象，该对象的属性是输入选择器，返回一个结构化选择器。结构化选择器返回一个对象，该对象的key和<code>inputSelectors</code>参数的key相同，但是每个key对应的值都被替换为最终结果。</p>
+<pre><code class="language-javascript">const mySelectorA = state =&gt; state.a;
+const mySelectorB = state =&gt; state.b;
+
+const structuredSelector = createStructuredSelector({
+    x: mySelectorA,
+    y: mySelectorB
+});
+
+const result = structuredSelector({ a: 1, b: 2 });// 输出{ x: 1, y: 2 }
+
+</code></pre>
+<p>结构化选择器可以嵌套：</p>
+<pre><code>const nestedSelector = createStructuredSelector({
+    subA: createStructuredSelector({ selectorA, selectorB }),
+    subB: createStructuredSelector({ selectorC, selectorD })
+});
+
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://xiewangmei.github.io/tag/xyqiu/" class="tag">
+                    xyqiu
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://xiewangmei.github.io/post/promise-introduce/">
+                  <h3 class="post-title">
+                    Promise简介
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>
