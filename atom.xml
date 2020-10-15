@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://xiewangmei.github.io</id>
     <title>Blog-wmxie</title>
-    <updated>2020-10-12T05:27:22.358Z</updated>
+    <updated>2020-10-15T01:55:42.771Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://xiewangmei.github.io"/>
     <link rel="self" href="https://xiewangmei.github.io/atom.xml"/>
@@ -10,6 +10,360 @@
     <logo>https://xiewangmei.github.io/images/avatar.png</logo>
     <icon>https://xiewangmei.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Blog-wmxie</rights>
+    <entry>
+        <title type="html"><![CDATA[如何绘制一个带飞线动效的旋转3D地球]]></title>
+        <id>https://xiewangmei.github.io/post/3d-earth/</id>
+        <link href="https://xiewangmei.github.io/post/3d-earth/">
+        </link>
+        <updated>2020-10-15T01:42:52.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="期望效果图">期望效果图</h2>
+<p><img src="https://xiewangmei.github.io/post-images/1602726769537.gif" alt="期望效果" loading="lazy"><br>
+从效果图中，我们提炼出几个需要实现的关键点：</p>
+<ul>
+<li>绘制一个立体地球</li>
+<li>实现地球颜色渐变（左上角稍亮，右下角稍暗）</li>
+<li>实现地球上的点，点的连线，连线上的飞点</li>
+<li>实现地球自转</li>
+<li>实现根据鼠标的移入移出切换地球的自动旋转</li>
+<li>实现中国地图鼠标悬浮高亮效果</li>
+<li>实现拖拽</li>
+</ul>
+<h2 id="确定地球的dom结构">确定地球的DOM结构</h2>
+<p>我们按照<code>海洋→陆地→球面点→连线→飞点</code>这样的顺序来分层绘制地球，所以其DOM结构如下：</p>
+<pre><code class="language-html">&lt;div&gt;
+  &lt;canvas id=&quot;oceanCanvas&quot; /&gt;
+  &lt;canvas id=&quot;landCanvas&quot; /&gt;
+  &lt;svg id=&quot;pointSvg&quot; /&gt;
+  &lt;canvas id=&quot;linkCanvas&quot; /&gt;
+  &lt;canvas id=&quot;flyPointCanvas&quot; /&gt;
+&lt;/div&gt;
+</code></pre>
+<h2 id="绘制一个基础地球">绘制一个基础地球</h2>
+<p>地球由<strong>海洋</strong>和<strong>陆地</strong>组成，我们在实现时也按照这两个部分分步绘制。</p>
+<h3 id="绘制海洋">绘制海洋</h3>
+<p>这部分最为简单，在画布中心绘制一个直径稍小于画布宽高的圆即可，为其填充蓝色</p>
+<pre><code class="language-html">&lt;canvas id=&quot;oceanCanvas&quot;&gt;&lt;/canvas&gt;
+</code></pre>
+<pre><code class="language-javascript">const oceanCanvas = document.getElementById(&quot;#oceanCanvas&quot;);
+const { width, height } = oceanCanvas;
+const cx = width/2;
+const cy = height/2;
+const oceanCanvasContext = oceanCanvas.getContext(&quot;2d&quot;);
+const oceanRadius = Math.min(width, height) * 0.8;
+oceanCanvasContext.fillStyle = &quot;blue&quot;;
+oceanCanvasContext.arc(cx, cy, oceanRadius, 0, Math.PI);
+oceanCanvasContext.fill();
+</code></pre>
+<h3 id="绘制陆地">绘制陆地</h3>
+<p>准备好一份标准的<code>worldmap.json</code>，用作陆地数据。</p>
+<p>我们在海洋画布上方罩一个同尺寸的画布，用于绘制陆地。</p>
+<pre><code class="language-html">&lt;canvas id=&quot;oceanCanvas&quot;&gt;&lt;/canvas&gt;
+&lt;canvas id=&quot;landCanvas&quot;&gt;&lt;/canvas&gt;
+</code></pre>
+<p>有了数据，怎么把数据转换成一个个图呢？这里我们引入<code>d3</code>库，它提供了一套完备的API可供绘制地图。</p>
+<pre><code class="language-javascript">// 创建投影
+const projection = d3.geoOrthographic().clipAngle(90).scale(oceanRadius).translate([cx, cy]).rotate([90, 0, 0]);
+// 依据投影创建路径生成器
+const path = d3.geoPath(projection);
+landCanvasContext.fillStyle = &quot;skyblue&quot;;
+landCanvasContext.strokeStyle = &quot;skyblue&quot;;
+// 提取陆地数据中的features
+const features = worldmap.features;
+features.forEach(f =&gt; {
+    landCanvasContext.beginPath();
+    path.context(landCanvasContext)(f);
+    landCanvasContext.closePath();
+    landCanvasContext.stroke();
+    landCanvasContext.fill();
+});
+</code></pre>
+<p>到这一步，我们应该能画出一个静止的地球了。</p>
+<h2 id="实现地球的颜色渐变">实现地球的颜色渐变</h2>
+<p>由于陆地是由成百上千个路径组成，对其填充色做渐变处理会十分麻烦。而由于海洋是一个简单圆形，实现渐变会相对简单，故我们将渐变色填充给海洋，陆地则填充一个带有透明度的色值，这样效果能比较接近。</p>
+<pre><code class="language-javascript">const highlightCenterX = cx - oceanRadius/2;
+const highlightCenterY = cy - oceanRadius/2;
+const grd = context.createRadialGradient(highlightCenterX, highlightCenterY, r/8, highlightCenterX, highlightCenterY, 1.25 * oceanRadius);
+grd.addColorStop(0, &quot;#0d4484&quot;);
+grd.addColorStop(1, &quot;#041e3c&quot;);
+context.fillStyle = grd;
+context.arc(cx, cy, r, 0, Math.PI);
+context.fill();
+...
+landCanvasContext.fillStyle = &quot;rgba(0, 80, 192, 0.4)&quot;;// 陆地修改为带透明度的色值
+...
+</code></pre>
+<p>到这一步，地球已经加上了渐变效果。</p>
+<h2 id="绘制球面上的点">绘制球面上的点</h2>
+<p>球面上的点实际上是一个个的经纬度坐标，而要将这些经纬度坐标转成屏幕坐标仍旧需要借助<code>d3</code>的API</p>
+<pre><code class="language-javascript">const geoPath = d3.geoPath(projection);// 依据投影创建一个路径生成器
+const enterFn = enter =&gt; {
+    const g = enter.append(&quot;g&quot;);
+    g.append(&quot;path&quot;).attr(&quot;class&quot;, &quot;full&quot;);
+    g.append(&quot;path&quot;).attr(&quot;class&quot;, &quot;circle&quot;);
+};
+const updateFn = update =&gt; {
+    update.each(function(d) {
+        const circle = d3.geoCircle().center(d.geometry.coordinates);// 根据投影创建圆生成器
+        const color = d.color;
+        const g = d3.select(this);
+        g.select(&quot;path.full&quot;).attr(&quot;fill&quot;, color).attr(&quot;d&quot;, geoPath(circle.radius(1.5)()));
+        g.select(&quot;path.circle&quot;).attr(&quot;stroke&quot;, color).attr(&quot;d&quot;, geoPath(circle.radius(2)()));
+    });
+};
+svg.selectAll(&quot;g&quot;).data(points).join(enterFn, updateFn);
+</code></pre>
+<p>到这一步，球面上的点绘制完成</p>
+<h2 id="绘制点之间的连线">绘制点之间的连线</h2>
+<p>绘制连线可以采用插值器的方式实现，具体可以参考<code>d3</code>官网的<a href="http://bl.ocks.org/dwtkns/4973620">例子</a>，但是我们要实现的效果跟官网有些许区别：官网示例中，当其中一个点转到地球背面时，整条线都不可见；而我们是尽可能多地展示连线可见部分。所以得另辟蹊径。</p>
+<p><img src="https://xiewangmei.github.io/post-images/1602726832506.png" alt="地球连线示意图" loading="lazy"><br>
+如上图所示，地球外层画了一系列圆圈，这些圆圈可以理解为地球外侧的一系列轨道，我们可以在轨道上取一系列的点，将这些点用短线段进行连接，最终形成一个完整的从起点到终点的连线。上图中的连线看起来不平滑，所以我们实际操作时可以<strong>适当减小轨道间距，增加轨道数，以增加平滑度</strong>。</p>
+<p><strong>注：为何不采用二次贝塞尔曲线？二次贝塞尔曲线需要根据轨道上每个点的二维坐标计算控制点，随着地球的旋转，坐标一直在发生变化，控制点也会随之改变，这样绘制出的曲线就会有在地球表面&quot;拖动&quot;的效果</strong></p>
+<h3 id="选取连线上的点">选取连线上的点</h3>
+<figure data-type="image" tabindex="1"><img src="https://xiewangmei.github.io/post-images/1602726866367.png" alt="地球连线示意图2" loading="lazy"></figure>
+<p>任何两点之间的连线，我们都可以通过旋转地球达到上图所示的效果，所以我们简化问题，以此视角进行分析：</p>
+<p>前面提到过，地球外层的一系列圆圈可以理解为轨道，那么这些轨道上的点一定可以投影到地球表面，找到对应的地理坐标。反之，我们找到这些地球表面上的点，就能根据轨道投影找到轨道上对应位置的点。观察上图中点与点之间间距变化发现：左右对称，并且从起点到最外层轨道间距是逐渐增大（貌似在暗示我们用<code>d3.scalePow()</code>）。</p>
+<p>我们目前的已知项只有起终点坐标，而借助<code>d3.geoInterpolate(start, end)(ratio)</code>可以得出<strong>两点间指定比例(ratio：0~1)的点的经纬度坐标</strong>，有了这一系列的经纬度坐标，投影上的位置相应也能够得出。所以，问题又简化成如何计算出**类似[ 0, 0.0625, 0.125, 0.25, 0.5, 0.75, 0.875, 0.7375, 1 ]**的<code>ratios数组</code>。</p>
+<p>前面我们讲到，连线左右对称，且左半部分间距逐渐增大，可以用<code>d3.scalePow()</code>来实现：</p>
+<pre><code class="language-javascript">// size：轨道数量(地球表面算第0个轨道)
+// 计算左半边弧线的比率
+const calcRatios = size =&gt; {
+  const scale = d3
+    .scalePow()
+    .exponent(2)
+    .domain([0, size - 1])
+    .range([0, 0.5]);
+  let i = 0;
+  const result = [];
+  while (i &lt; size) result.push(scale(i++));
+  // 拼接出弧线上的所有比率
+  return [
+    ...result,
+    ...result
+      .slice(0, result.length - 1)
+      .map(v =&gt; 1 - v)
+      .reverse()
+  ];
+};
+</code></pre>
+<p>现在有了<code>ratios数组</code>，再通过公式<code>d3.geoInterpolate(start, end)(ratio)</code>可以计算出对应比例的经纬度坐标，有了经纬度坐标，就能通过各自对应的投影得到这些点在屏幕上的位置：</p>
+<pre><code class="language-javascript">// 此处略过创建projections的代码
+const ratios = calcRatios(projections.length);
+const interpolate = d3.geoInterpolate(start, end);
+const infos = ratios.map((ratio, i) =&gt; {
+    const geoLocation = interpolate(ratio);
+    const projection = 
+          i &lt; projections.length 
+          ? projection[i] 
+          : projections[(projections.length - 1) * 2 - i];
+    const screenLocation = projection(geoLocation);
+    // 这里返回了比例、经纬度、投影、屏幕坐标,备用
+    return { ratio, geoLocation, projection, screenLocation };
+});
+</code></pre>
+<p>前文中为了方便讲解投影，比例等概念，将地球旋转到了一个完美角度，这个时候线上所有点均可见。但在地球不断旋转的过程中，经常会有线的一段甚至整段处于地球背面的情况，所以需要对这些点进行过滤处理：</p>
+<ul>
+<li>起终点均可见——不过滤</li>
+<li>起点可见终点不可见——找到最后一个可见的点</li>
+<li>起点不可见终点可见——找到第一个可见的点</li>
+</ul>
+<p>我们以可视半球的正投影中心（圆心）为参考点，可视半球上的任意一点到参考点的弧度差范围在<code>0 ~ π/2</code>之间，不可视半球上的点到参考点的弧度差在<code>π/2 ~ π</code>之间，<code>d3.geoDistance(coordinate1, coordinate2)</code>可用来计算球面上两个经纬度之间的弧度差，根据差值即可判定出该点是落在可视半球还是非可视半球上。</p>
+<pre><code class="language-javascript">const { start, end } = link;// 假定link是众多线中的其中一条的数据
+const center = projections[0].invert([w/2, h/2]);// 得到正投影圆心的经纬度
+const distBetweenStartCenter = d3.geoDistance(center, start);
+const distBetweenEndCenter = d3.geoDistance(center, end);
+if(distBetweenStartCenter &gt;= 1.57 &amp;&amp; distBetweenEndCenter &gt;= 1.57) {
+   return [];
+}else {
+    if(distBetweenStartCenter &gt;= 1.57) {// 起点不可见
+       const firstVisiblePointIndex = infos.findIndex(
+           info =&gt; d3.geoDistance(center, info.geoLocation) &lt;
+           1.57 + Math.acos(projections[0].scale() / info.projection.scale())
+       );
+       return infos.slice(firstVisible);
+    } else if(distBetweenEndCenter &gt;= 1.57) { // 终点不可见
+       const lastVisiblePointIndex = [...infos]
+           .reverse()
+           .findIndex(
+               info =&gt; d3.geoDistance(center, info.geoLocation) &lt;
+               1.57 + Math.acos(projections[0].scale() / info.projection.scale())
+           );
+        return infos.slice(0, infos.length - lastVisiblePointIndex);
+    } else {// 起终点均可见
+        return infos;
+    }
+}
+</code></pre>
+<h3 id="以点成线">以点成线</h3>
+<p>到这里，我们就能够循环遍历infos绘制出所有连线了。不过在此之前，我们需要将上一步最后的代码包到函数里方便调用：</p>
+<pre><code class="language-javascript">const calcLinkPoints = (start, end, projection, w, h) =&gt; {
+    // 计算infos
+    return infos;
+};
+</code></pre>
+<p>画线：</p>
+<pre><code class="language-javascript">linkCanvasContext.lineWidth = 0.5;
+linkCanvasContext.strokeStyle = &quot;rgba(146, 191, 243, 0.8)&quot;;
+links.forEach(data =&gt; {
+    data.points = calcLinkPoints(data.source, data.target, projections, width, height);
+    if(data.points.length) {
+        d3.line().context(linkCanvasContext)(
+            data.points.map(info =&gt; info.screenLocation)
+        );
+    }
+});
+</code></pre>
+<h2 id="绘制线上的飞点">绘制线上的飞点</h2>
+<p>我们看到的线上的飞点是由一个个圆心连续，半径逐渐变小且颜色逐渐变淡的圆组合而成。<br>
+<img src="https://xiewangmei.github.io/post-images/1602726899299.png" alt="地球连线示意图3" loading="lazy"></p>
+<p>点与点之间的位置及比例关系：<br>
+<img src="https://xiewangmei.github.io/post-images/1602726916062.png" alt="地球连线示意图4" loading="lazy"></p>
+<pre><code class="language-javascript">const getRadius = d3
+  .scaleLinear()
+  .domain([0, 30])
+  .range([1.5, 0]);
+const colorInterpolate = d3.interpolate([&quot;#FFFFFF&quot;, &quot;#92BFF3&quot;]);
+const scaleColor = d3
+  .scaleLinear()
+  .domain([0,30])
+  .range([0,1]);
+const getGradientCircleRadiusAndFill = index =&gt; ({
+  r: getRadius(index),
+  fill: getColor(index)
+});
+
+const drawFlyPoint = (context, links) =&gt; {
+    links.forEach(data =&gt; {
+        // curRatio:飞点当前位置占线总长的百分比
+        const curRatio = data.ratio;
+        // 找到第一个比飞点当前位置大的百分比(轨道上的比率)
+        const firstBiggerIndex = data.points.findIndex(p =&gt; p.ratio &gt; curRatio);
+        if(firstBiggerIndex &lt;= 0) {
+        } else {
+            const p1 = data.points[firstBiggerIndex - 1];
+            const p3 = data.points[firstBiggerIndex];
+            const r = (curRatio - p1.ratio) / (p3.ratio - p1.ratio);
+            const p2X = 
+                  p1.screenLocation[0] + 
+                  r * (p3.screenLocation[0] - p1.screenLocation[0]);
+            const p2Y = 
+                  p1.screenLocation[1] + 
+                  r * (p3.screenLocation[1] - p1.screenLocation[1]);
+            const points = [
+                [p2X, p2Y],
+                ...data.points
+                  .slice(0, firstBiggerIndex)
+                  .reverse()
+                  .map(p =&gt; p.screenLocation)
+            ];
+            
+            const centers = getCirclesCenter(points);
+            centers.forEach((c, index) =&gt; {
+                const { r, fill } = getGradientCircleRadiusAndFill(index);
+                context.fillStyle = fill;
+                context.beginPath();
+                context.arc(c[0], c[1], r, 0, Math.PI * 2);
+                context.closePath();
+                context.fill();
+            });
+        }
+    });
+};
+</code></pre>
+<p>这样我们就能根据每次的数据绘制出对应位置的飞点</p>
+<h2 id="实现地球自转">实现地球自转</h2>
+<p>地球自转实际上对应的是各个投影轨道的角度翻转(rotate)，所以比较简单：</p>
+<pre><code class="language-javascript">const rotate = rotation =&gt; projections.forEach(p =&gt; p.rotate(rotation));
+const animate = () =&gt; {
+  links.forEach(l =&gt; {
+    l.ratio = l.stepRatio + l.ratio;
+    if(l.ratio &gt;= 1) l.ratio = 0;//飞点到达终点后重新开始飞点
+  });
+  if(autoRotate) {
+    rotate(peojections[0].rotate().map((v, i) =&gt; (i === 0 ? v + 0.2 :v)));
+  }
+  ...
+  //重新绘制地球以及点、线等
+  ...
+  window.requestAnimationFrame(animate);
+};
+</code></pre>
+<h2 id="实现鼠标移入停转移出开转">实现鼠标移入停转移出开转</h2>
+<p>注意到地球自转代码里有一个标志位<code>autoRotate</code>，用来决定球体是否自动旋转，那只需要对<code>mousemove</code>做个监听就行了：</p>
+<pre><code class="language-javascript">d3.select(document.body)
+  .on(
+    &quot;mousemove&quot;,
+    () =&gt; 
+      (autoRotate = 
+        getDistance(
+          [d3.event.clientX, d3.event.clientY],
+          [width / 2, height / 2]
+        ) &gt; earthRadius)
+  );
+</code></pre>
+<h2 id="实现中国地图悬浮高亮效果">实现中国地图悬浮高亮效果</h2>
+<p>在前面绘制陆地部分，我们已经将所有的国家都绘制在canvas上，而在canvas上做交互会比较麻烦，所以我们将中国数据单独提取出来，绘制到svg上，这样可以对中国版图添加hover样式。</p>
+<p>修改dom结构：</p>
+<pre><code class="language-jsx">&lt;div&gt;
+  &lt;canvas id=&quot;oceanCanvas&quot; /&gt;
+  &lt;canvas id=&quot;landCanvas&quot; /&gt;
+  &lt;svg id=&quot;chinaSvg&quot; /&gt;
+  &lt;svg id=&quot;pointSvg&quot; /&gt;
+  &lt;canvas id=&quot;linkCanvas&quot; /&gt;
+  &lt;canvas id=&quot;flyPointCanvas&quot; /&gt;
+&lt;/div&gt;
+</code></pre>
+<p>单独绘制中国地图部分:</p>
+<pre><code class="language-javascript">const chinaFeature = features.filter(isInChina);
+d3.select(chinaSvg)
+  .selectAll(&quot;g.land&quot;)
+  .data(chinaFeature)
+  .join(
+    enter =&gt;
+      enter
+        .append(&quot;g&quot;)
+        .classed(&quot;china&quot;, true)
+        .append(&quot;path&quot;)
+        .attr(&quot;fill&quot;, &quot;skyblue&quot;)
+        .attr(&quot;stroke&quot;, &quot;skyblue&quot;),
+      update =&gt; update.select(&quot;path&quot;).attr(&quot;d&quot;, d3.geoPath(projections[0]))
+  );
+</code></pre>
+<p>CSS：</p>
+<pre><code class="language-scss">.china:hover path {
+    fill: rgba(255, 200, 0, 0.8)
+}
+</code></pre>
+<h2 id="实现拖拽">实现拖拽</h2>
+<p>拖拽也是添加监听即可</p>
+<pre><code class="language-javascript">const addRotateListeners = (selection, projection, rotateHander) =&gt; {
+  let m0, o0;
+  const body = d3.select(document.body);
+
+  const startDrag = () =&gt; {
+    m0 = [d3.event.pageX, d3.event.pageY];
+    o0 = projection.rotate();
+    body.on(&quot;mousemove.forRotate&quot;, drag);
+    body.on(&quot;mouseup.forRotate&quot;, stopDrag);
+  };
+  const drag = () =&gt; {
+    const m1 = [d3.event.pageX, d3.event.pageY];
+    const o1 = [o0[0] + (m1[0] - m0[0]) / 6, o0[1] + (m0[1] - m1[1]) / 6];
+    o1[1] = o1[1] &gt; 30 ? 30 : o1[1] &lt; -30 ? -30 : o1[1];
+    rotateHander(o1);
+  };
+  const stopDrag = () =&gt; {
+    body.on(&quot;mousemove.forRotate&quot;, null);
+    body.on(&quot;mouseup.forRotate&quot;, null);
+  };
+
+  selection.on(&quot;mousedown&quot;, startDrag);
+};
+addRotateListeners(pointSvg, projections[0], rotate);
+</code></pre>
+<h2 id="小结">小结</h2>
+<p>至此，效果图我们已经实现完成，功能点较多，依赖于<code>d3</code>库的<code>projection</code>，还掺杂有一些数学几何知识，需要花一些时间去思考。后续可以将其封装成<code>React</code>组件或者<code>Vue</code>组件，以备不时之需</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[React Diff]]></title>
         <id>https://xiewangmei.github.io/post/react-diff/</id>
