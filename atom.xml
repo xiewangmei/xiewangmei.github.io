@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://xiewangmei.github.io</id>
     <title>Blog-wmxie</title>
-    <updated>2020-12-01T07:59:37.501Z</updated>
+    <updated>2020-12-01T08:07:56.840Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://xiewangmei.github.io"/>
     <link rel="self" href="https://xiewangmei.github.io/atom.xml"/>
@@ -11,11 +11,11 @@
     <icon>https://xiewangmei.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Blog-wmxie</rights>
     <entry>
-        <title type="html"><![CDATA[项目部署阿里云服务器]]></title>
-        <id>https://xiewangmei.github.io/post/egg-react-ali/</id>
-        <link href="https://xiewangmei.github.io/post/egg-react-ali/">
+        <title type="html"><![CDATA[React-Egg-Nginx部署]]></title>
+        <id>https://xiewangmei.github.io/post/react-egg-nginx/</id>
+        <link href="https://xiewangmei.github.io/post/react-egg-nginx/">
         </link>
-        <updated>2020-12-01T05:56:19.000Z</updated>
+        <updated>2020-12-01T08:06:13.000Z</updated>
         <content type="html"><![CDATA[<ol>
 <li>
 <p>安装git</p>
